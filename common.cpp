@@ -1,5 +1,4 @@
-﻿#include "stdafx.h"
-#include "Common.h"
+﻿#include "Common.h"
 
 char* global_PCIeParameterName[DMA_PARAM_SIZE];
 
