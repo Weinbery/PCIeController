@@ -36,12 +36,16 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     mdichild.cpp \
     highspeedwindow.cpp \
-    pciexpress.cpp
+    pciexpress.cpp \
+    highspeedoperation.cpp \
+    common.cpp
 
 HEADERS  += mainwindow.h \
     mdichild.h \
     highspeedwindow.h \
-    pciexpress.h
+    pciexpress.h \
+    highspeedoperation.h \
+    common.h
 
 FORMS    += mainwindow.ui \
     highspeedwindow.ui

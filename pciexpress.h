@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCIEXPRESS_H
+#define PCIEXPRESS_H
 
 #include <windows.h>
 #include <list>
@@ -92,4 +93,4 @@ extern "C" {
 	void __declspec(dllexport) Close(PCIeParameter *pCard);
 #ifdef __cplusplus
 }
-#endif
+#endif // PCIEXPRESS_H
