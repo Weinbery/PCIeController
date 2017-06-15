@@ -22,15 +22,26 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+# INCLUDEPATH += $$PWD/winDriver/include
+INCLUDEPATH += $$PWD/winDriver
+INCLUDEPATH += $$PWD/winDriver/lib
+INCLUDEPATH += $$PWD/winDriver/include
+#
+LIBS += $$PWD/winDriver/lib/wd_utils.dll
+LIBS += $$PWD/winDriver/lib/wdlib.dll
+#LIBS += -L$$PWD/winDriver/lib/-lwd_utils
+#LIBS += -L$$PWD/winDriver/lib/-lwdlib
 
 SOURCES += main.cpp\
         mainwindow.cpp \
     mdichild.cpp \
-    highspeedwindow.cpp
+    highspeedwindow.cpp \
+    pciexpress.cpp
 
 HEADERS  += mainwindow.h \
     mdichild.h \
-    highspeedwindow.h
+    highspeedwindow.h \
+    pciexpress.h
 
 FORMS    += mainwindow.ui \
     highspeedwindow.ui

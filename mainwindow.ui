@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>960</width>
-    <height>640</height>
+    <width>1280</width>
+    <height>800</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>960</width>
+     <width>1280</width>
      <height>23</height>
     </rect>
    </property>
@@ -78,7 +78,7 @@
   </widget>
   <action name="action_Add_Device">
    <property name="icon">
-    <iconset resource="../NetworkUtility/res.qrc">
+    <iconset resource="res.qrc">
      <normaloff>:/images/device.png</normaloff>:/images/device.png</iconset>
    </property>
    <property name="text">
@@ -93,7 +93,7 @@
   </action>
   <action name="action_Setting">
    <property name="icon">
-    <iconset resource="../NetworkUtility/res.qrc">
+    <iconset resource="res.qrc">
      <normaloff>:/images/save.png</normaloff>:/images/save.png</iconset>
    </property>
    <property name="text">
@@ -108,7 +108,7 @@
   </action>
   <action name="action_Config">
    <property name="icon">
-    <iconset resource="../NetworkUtility/res.qrc">
+    <iconset resource="res.qrc">
      <normaloff>:/images/file.png</normaloff>:/images/file.png</iconset>
    </property>
    <property name="text">
@@ -123,7 +123,7 @@
   </action>
   <action name="action_Logger">
    <property name="icon">
-    <iconset resource="../NetworkUtility/res.qrc">
+    <iconset resource="res.qrc">
      <normaloff>:/images/paste.png</normaloff>:/images/paste.png</iconset>
    </property>
    <property name="text">
@@ -135,7 +135,7 @@
   </action>
   <action name="action_Parameter">
    <property name="icon">
-    <iconset resource="../NetworkUtility/res.qrc">
+    <iconset resource="res.qrc">
      <normaloff>:/images/folder.png</normaloff>:/images/folder.png</iconset>
    </property>
    <property name="text">
@@ -147,6 +147,8 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
  <connections/>
 </ui>
