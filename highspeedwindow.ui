@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>483</width>
-    <height>308</height>
+    <height>332</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -101,6 +101,60 @@
        </property>
        <property name="text">
         <string>..</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>寄存器测试</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEditRegisterOffset">
+       <property name="statusTip">
+        <string/>
+       </property>
+       <property name="whatsThis">
+        <string/>
+       </property>
+       <property name="inputMask">
+        <string/>
+       </property>
+       <property name="placeholderText">
+        <string>偏移</string>
+       </property>
+       <property name="cursorMoveStyle">
+        <enum>Qt::LogicalMoveStyle</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEditRegisterValue">
+       <property name="inputMask">
+        <string/>
+       </property>
+       <property name="placeholderText">
+        <string>值</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonReadRegister">
+       <property name="text">
+        <string>读出</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonWriteRegister">
+       <property name="text">
+        <string>写入</string>
        </property>
       </widget>
      </item>
@@ -238,7 +292,7 @@
        <item>
         <widget class="QLabel" name="labelStartOrStop">
          <property name="text">
-          <string>0</string>
+          <string>78</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>

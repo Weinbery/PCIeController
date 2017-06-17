@@ -14,13 +14,38 @@ MainWindow::MainWindow(QWidget *parent) :
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setCentralWidget(mdiArea);
 
+    comboWorkspace = new QComboBox();
+    comboWorkspace->setEditable(true);
+    comboWorkspace->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    comboDirList << "E:/Qt/Workspace" << "E:/Qt";
+    comboWorkspace->addItems(comboDirList);
+    ui->toolBarWorkspace->addWidget(comboWorkspace);
+
+    bControlWorkspace = false;
+/*
+    QWidget* spacer = new QWidget();
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    // toolBar is a pointer to an existing toolbar
+    ui->toolBarWorkspace->addWidget(spacer);
+    ui->toolBarWorkspace->addAction("Right-aligned button");
+*/
     createDockWindows();
-    setStyleSheet("background-color:rgb(199, 237, 204)");
+    //setStyleSheet("background-color:rgb(199, 237, 204)");
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+QString MainWindow::getCurrentWorkspace() const
+{
+    return strCurrentWorkspace;
+}
+
+void MainWindow::setCurretWorkspace(QString strWorkspace)
+{
+    strCurrentWorkspace = strWorkspace;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -61,11 +86,24 @@ void MainWindow::createDockWindows()
     addDockWidget(Qt::BottomDockWidgetArea, logWidget);
 
     QDockWidget* modelWidget = new QDockWidget(tr("模型视图"), this);
-    modelWidget->setWidget(&treeWidget);
+    dirModel = new QDirModel();
+    dirModel->setReadOnly(false);
+    dirModel->setSorting(QDir::DirsFirst | QDir::IgnoreCase | QDir::Name);
+    treeView = new QTreeView();
+    treeView->setModel(dirModel);
+    /*
+    QModelIndex index = dirModel->index("D:/");
+    ui->treeView->expand(index);
+    ui->treeView->scrollTo(index);
+    ui->treeView->setCurrentIndex(index);
+    ui->treeView->resizeColumnToContents(0);
+*/
+    modelWidget->setWidget(treeView);
     addDockWidget(Qt::LeftDockWidgetArea, modelWidget);
 
     QDockWidget* propertyWidget = new QDockWidget(tr("属性视图"), this);
-    propertyWidget->setWidget(&tableWidget);
+    tableView = new QTableView();
+    propertyWidget->setWidget(tableView);
     addDockWidget(Qt::RightDockWidgetArea, propertyWidget);
 }
 /*
@@ -100,3 +138,82 @@ void MainWindow::on_action_Add_Device_triggered()
     child->show();
 }
 */
+
+void MainWindow::on_action_Back_triggered()
+{
+    if (comboDirList.size() <= 1)
+    {
+        return;
+    }
+    bControlWorkspace = true;
+    strCurrentWorkspace = comboDirList.at(1);
+    //comboWorkspace->setCurrentText(strCurrentWorkspace);
+    comboWorkspace->clear();
+    comboDirList.insert(0, strCurrentWorkspace);
+    comboDirList.removeDuplicates();
+    comboWorkspace->addItems(comboDirList);
+}
+
+void MainWindow::on_action_Forward_triggered()
+{
+    if (comboDirList.size() <= 1)
+    {
+        return;
+    }
+    if (bControlWorkspace)
+    {
+        bControlWorkspace = false;
+        strCurrentWorkspace = comboDirList.at(1);
+        comboWorkspace->clear();
+        comboDirList.insert(0, strCurrentWorkspace);
+        comboDirList.removeDuplicates();
+        comboWorkspace->addItems(comboDirList);
+    }
+}
+
+void MainWindow::on_action_Upper_triggered()
+{
+    strCurrentWorkspace = comboWorkspace->currentText();
+    QDir currentDir(strCurrentWorkspace);
+    if (currentDir.cdUp())
+    {
+        strCurrentWorkspace = currentDir.absolutePath();
+        comboWorkspace->clear();
+        comboDirList.insert(0, strCurrentWorkspace);
+        comboDirList.removeDuplicates();
+        comboWorkspace->addItems(comboDirList);
+    }
+}
+
+void MainWindow::on_action_Lookup_triggered()
+{
+    strCurrentWorkspace = comboWorkspace->currentText();
+    //
+    QString strWorkspace = QFileDialog::getExistingDirectory(this, "请选择工作空间", strCurrentWorkspace);
+    if (strWorkspace.isEmpty())
+    {
+        return;
+    }
+    else
+    {
+        strCurrentWorkspace = strWorkspace;
+    }
+    comboWorkspace->setCurrentText(strCurrentWorkspace);
+    comboWorkspace->clear();
+    comboDirList.insert(0, strCurrentWorkspace);
+    comboDirList.removeDuplicates();
+    comboWorkspace->addItems(comboDirList);
+}
+
+void MainWindow::on_action_Curve_triggered()
+{
+    QDockWidget *dock = new QDockWidget(tr("速率曲线"), this);
+    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    QListWidget* qlist = new QListWidget(dock);
+    qlist->addItems(QStringList()
+            << "John Doe, Harmony Enterprises, 12 Lakeside, Ambleton"
+            << "Sol Harvey, Chicos Coffee, 53 New Springs, Eccleston"
+            << "Sally Hobart, Tiroli Tea, 67 Long River, Fedula");
+    dock->setWidget(qlist);
+    addDockWidget(Qt::RightDockWidgetArea, dock);
+}
