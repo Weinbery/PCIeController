@@ -19,7 +19,9 @@ public:
 
     static int sequenceNumber;
 
-    QString getFile();
+    QString getFile() const;
+
+    QString getWindowTitle() const;
 
 private slots:
     void on_comboBoxSendType_currentIndexChanged(int index);
@@ -28,7 +30,7 @@ private slots:
 
 private:
     Ui::HighSpeedWindow *ui;
-    QString strCurrentWindow;
+    QString strWindowTitle;
     QString strFile;
 };
 

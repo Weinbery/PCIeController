@@ -20,16 +20,24 @@ MainWindow::MainWindow(QWidget *parent) :
     comboDirList << "E:/Qt/Workspace" << "E:/Qt";
     comboWorkspace->addItems(comboDirList);
     ui->toolBarWorkspace->addWidget(comboWorkspace);
+    strCurrentWorkspace = comboWorkspace->currentText();
 
     bControlWorkspace = false;
-/*
-    QWidget* spacer = new QWidget();
-    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    // toolBar is a pointer to an existing toolbar
-    ui->toolBarWorkspace->addWidget(spacer);
-    ui->toolBarWorkspace->addAction("Right-aligned button");
-*/
+
     createDockWindows();
+
+    m_iconDriver = QIcon(":/images/driver.png");
+    m_iconFolder = QIcon(":images/folder.png");
+    m_iconFile = QIcon(":/images/file.png");
+    // 显示文件视图
+    updateFileView(strCurrentWorkspace);
+
+    logger = new Logger();
+    connect(this, SIGNAL(loggerWrite(QString)), logger, SLOT(loggerWrite(QString)));
+    connect(this, SIGNAL(loggerWrite(QString)), this, SLOT(loggerOutput(QString)));
+    connect(listWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(on_listWidget_itemDoubleClicked(QListWidgetItem*)));
+    connect(listWidget, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(on_listWidget_currentItemChanged(QListWidgetItem*,QListWidgetItem*)));
+
     //setStyleSheet("background-color:rgb(199, 237, 204)");
 }
 
@@ -72,49 +80,23 @@ void MainWindow::createStatusBar()
 
 void MainWindow::createDockWindows()
 {
-    QDockWidget *logWidget = new QDockWidget(tr("运行日志"), this);
+    QDockWidget *logView = new QDockWidget(tr("运行日志"), this);
     //dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    customerList = new QListWidget(logWidget);
-    customerList->addItems(QStringList()
-            << "John Doe, Harmony Enterprises, 12 Lakeside, Ambleton"
-            << "Jane Doe, Memorabilia, 23 Watersedge, Beaton"
-            << "Tammy Shea, Tiblanka, 38 Sea Views, Carlton"
-            << "Tim Sheen, Caraba Gifts, 48 Ocean Way, Deal"
-            << "Sol Harvey, Chicos Coffee, 53 New Springs, Eccleston"
-            << "Sally Hobart, Tiroli Tea, 67 Long River, Fedula");
-    logWidget->setWidget(customerList);
-    addDockWidget(Qt::BottomDockWidgetArea, logWidget);
-
-    QDockWidget* modelWidget = new QDockWidget(tr("模型视图"), this);
-    dirModel = new QDirModel();
-    dirModel->setReadOnly(false);
-    dirModel->setSorting(QDir::DirsFirst | QDir::IgnoreCase | QDir::Name);
-    treeView = new QTreeView();
-    treeView->setModel(dirModel);
-    /*
-    QModelIndex index = dirModel->index("D:/");
-    ui->treeView->expand(index);
-    ui->treeView->scrollTo(index);
-    ui->treeView->setCurrentIndex(index);
-    ui->treeView->resizeColumnToContents(0);
-*/
-    modelWidget->setWidget(treeView);
-    addDockWidget(Qt::LeftDockWidgetArea, modelWidget);
-
+    logWidget = new QListWidget(logView);
+    logView->setWidget(logWidget);
+    addDockWidget(Qt::BottomDockWidgetArea, logView);
+    //
+    QDockWidget* fileView = new QDockWidget(tr("文件视图"), this);
+    listWidget = new QListWidget(fileView);
+    fileView->setWidget(listWidget);
+    addDockWidget(Qt::LeftDockWidgetArea, fileView);
+    //
     QDockWidget* propertyWidget = new QDockWidget(tr("属性视图"), this);
     tableView = new QTableView();
     propertyWidget->setWidget(tableView);
     addDockWidget(Qt::RightDockWidgetArea, propertyWidget);
 }
-/*
-MdiChild *MainWindow::createMdiChild()
-{
-    MdiChild *child = new MdiChild;
-    mdiArea->addSubWindow(child);
 
-    return child;
-}
-*/
 HighSpeedWindow *MainWindow::createMdiChild()
 {
     HighSpeedWindow *child = new HighSpeedWindow;
@@ -122,22 +104,34 @@ HighSpeedWindow *MainWindow::createMdiChild()
 
     return child;
 }
-void MainWindow::on_action_Add_Device_triggered()
+
+void MainWindow::loggerOutput(const QString strContext)
+{
+    QString strTime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+    QString strlog = strTime + "\t" + strContext;
+    //
+    logWidget->addItem(strlog);
+}
+
+void MainWindow::updateFileView(const QString strDir)
+{
+    QDir dirNew(strDir);
+    if (dirNew.exists())
+    {
+        m_dirCur = QDir(dirNew.canonicalPath());
+        showItem(m_dirCur);
+    }
+}
+
+void MainWindow::on_action_AddHighSpee_triggered()
 {
     static int nOffset = 0;
     HighSpeedWindow *child = createMdiChild();
     child->resize(320 + nOffset, 240 + nOffset);
     nOffset += 10;
     child->show();
+    emit loggerWrite("创建" + child->getWindowTitle());
 }
-/*
-void MainWindow::on_action_Add_Device_triggered()
-{
-    MdiChild *child = createMdiChild();
-    child->newFile();
-    child->show();
-}
-*/
 
 void MainWindow::on_action_Back_triggered()
 {
@@ -152,6 +146,10 @@ void MainWindow::on_action_Back_triggered()
     comboDirList.insert(0, strCurrentWorkspace);
     comboDirList.removeDuplicates();
     comboWorkspace->addItems(comboDirList);
+    //
+    updateFileView(strCurrentWorkspace);
+    //
+    emit loggerWrite("进入:" + strCurrentWorkspace);
 }
 
 void MainWindow::on_action_Forward_triggered()
@@ -168,6 +166,10 @@ void MainWindow::on_action_Forward_triggered()
         comboDirList.insert(0, strCurrentWorkspace);
         comboDirList.removeDuplicates();
         comboWorkspace->addItems(comboDirList);
+        //
+        updateFileView(strCurrentWorkspace);
+        //
+        emit loggerWrite("进入:" + strCurrentWorkspace);
     }
 }
 
@@ -182,6 +184,10 @@ void MainWindow::on_action_Upper_triggered()
         comboDirList.insert(0, strCurrentWorkspace);
         comboDirList.removeDuplicates();
         comboWorkspace->addItems(comboDirList);
+        //
+        updateFileView(strCurrentWorkspace);
+        //
+        emit loggerWrite("进入:" + strCurrentWorkspace);
     }
 }
 
@@ -203,17 +209,273 @@ void MainWindow::on_action_Lookup_triggered()
     comboDirList.insert(0, strCurrentWorkspace);
     comboDirList.removeDuplicates();
     comboWorkspace->addItems(comboDirList);
+    //
+    updateFileView(strCurrentWorkspace);
+    //
+    emit loggerWrite("设置工作目录:" + strCurrentWorkspace);
 }
-
+// 绘制速率曲线
 void MainWindow::on_action_Curve_triggered()
 {
     QDockWidget *dock = new QDockWidget(tr("速率曲线"), this);
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     QListWidget* qlist = new QListWidget(dock);
     qlist->addItems(QStringList()
-            << "John Doe, Harmony Enterprises, 12 Lakeside, Ambleton"
-            << "Sol Harvey, Chicos Coffee, 53 New Springs, Eccleston"
-            << "Sally Hobart, Tiroli Tea, 67 Long River, Fedula");
+            << "速率曲线"
+            << "待实现");
     dock->setWidget(qlist);
     addDockWidget(Qt::RightDockWidgetArea, dock);
+    emit loggerWrite("打开速率曲线");
+}
+
+// 代码复制粘贴而来
+void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item)
+{
+    // 判断 item 的类型
+    int theType = item->type();
+
+    if(IDriver == theType)    // 如果是分区根
+    {
+        // 根路径
+        QString strFullPath = item->text();
+        // 设置当前目录
+        m_dirCur = QDir(strFullPath);
+        // 更新列表控件
+        showItem(m_dirCur);
+    }
+    else if(IFolder == theType)   // 如果是文件夹
+    {
+        // 先对 . 和 .. 做排除
+        QString strName = item->text();
+        if(tr(".") == strName)
+        {
+            // 直接返回工作目录
+            m_dirCur = QDir(strCurrentWorkspace);
+            showItem(m_dirCur);
+            // 返回
+            return;
+        }
+        else if(tr("..") == strName)
+        {
+            if (m_dirCur.absolutePath() == strCurrentWorkspace)
+            {
+                return;
+            }
+            // 切换父目录
+            if (m_dirCur.cdUp())
+            {
+                showItem(m_dirCur);
+            }
+            // 返回
+            return;
+        }
+        // 正常的子文件夹处理
+        QString strFullPath = m_dirCur.absolutePath() + tr("/") + strName;
+        strFullPath = QDir::cleanPath(strFullPath); //清理多余的斜杠
+        // 切换路径
+        m_dirCur = QDir(strFullPath);
+        // 更新列表控件
+        showItem(m_dirCur);
+    }
+    else// 普通文件
+    {
+        //拼接出路径字符串
+        QString strFilePath = m_dirCur.absolutePath() + tr("/") + item->text();
+        strFilePath = QDir::cleanPath(strFilePath); //清理多余的斜杠
+        /// 切记这样的转换，比较有用：QString转LPCWSTR
+        ShellExecute(NULL, NULL, strFilePath.toStdWString().c_str(), NULL, NULL, SW_SHOW);
+        //如果不是内嵌资源文件，是本地文件系统的
+        if(strFilePath.startsWith(tr(":")))
+        {
+            //调用系统浏览器打开
+            QDesktopServices::openUrl(QUrl::fromLocalFile(strFilePath));
+        }
+    }
+}
+// 代码复制粘贴而来
+void MainWindow::on_listWidget_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
+{
+    // 如果当前条目为空则返回
+    if(NULL == current)
+    {
+        return;
+    }
+    // 条目信息对象
+    QFileInfo fi;
+    // 记录信息字符串
+    QString strResult;
+    // 条目类型
+    int theType = current->type();
+    // 条目名称
+    QString strName = current->text();
+    // 判断类型
+    if(IDriver == theType)    //分区根
+    {
+        // 分区根路径
+        fi = QFileInfo(strName);
+        if(strName.startsWith(tr(":")))
+        {
+            strResult += tr("资源根 %1").arg(strName); //显示绝对路径
+        }
+        else
+        {
+            strResult += tr("分区根 %1").arg(strName); //显示绝对路径
+        }
+    }
+    else if(IFolder == theType)   //文件夹
+    {
+        //完整路径
+        QString strFullPath = m_dirCur.absolutePath() + tr("/") + strName;
+        strFullPath = QDir::cleanPath(strFullPath); //清理多余的斜杠
+        strResult += tr("文件夹 %1\r\n").arg(strFullPath); //显示绝对路径
+        //获取信息，添加到结果串
+        fi = QFileInfo(strFullPath);
+        strResult += getFolderInfo(fi);
+    }
+    else    //文件
+    {
+        //完整文件名
+        QString strFilePath = m_dirCur.absolutePath() + tr("/") + strName;
+        strFilePath = QDir::cleanPath(strFilePath); //清理多余的斜杠
+        strResult += tr("文件 %1\r\n").arg(strFilePath); //显示绝对路径
+        //获取文件信息，添加到结果串
+        fi = QFileInfo(strFilePath);
+        strResult += getFileInfo(fi);
+    }
+    //显示结果信息
+    //ui->plainTextEditInfo->setPlainText(strResult);
+}
+
+void MainWindow::showItem(const QDir &dir)
+{
+    if (!dir.exists())
+    {
+        return;
+    }
+    QFileInfoList li = dir.entryInfoList(QDir::NoFilter, QDir::DirsFirst);
+    int nCount = li.count();
+    listWidget->clear();
+    for (int i = 0; i < nCount; i++)
+    {
+        QString name = li[i].fileName();
+        if (li[i].isDir())
+        {
+            QListWidgetItem *itemFolder =
+                    new QListWidgetItem(m_iconFolder, name, NULL, IFolder);
+            listWidget->addItem(itemFolder);
+        }
+        else
+        {
+            QListWidgetItem *itemFile =
+                    new QListWidgetItem(m_iconFile, name, NULL, IFile);
+            listWidget->addItem(itemFile);
+        }
+    }
+}
+
+QString MainWindow::getFileInfo(const QFileInfo &fi)
+{
+    QString strResult;  //用于返回的串
+    //判断文件信息
+    if(fi.isReadable())
+    {
+        strResult += tr("可读：是\r\n");
+    }
+    else
+    {
+        strResult += tr("可读：否\r\n");
+    }
+    if(fi.isWritable())
+    {
+        strResult += tr("可写：是\r\n");
+    }
+    else
+    {
+        strResult += tr("可写：否\r\n");
+    }
+    if(fi.isExecutable())
+    {
+        strResult += tr("可执行：是\r\n");
+    }
+    else
+    {
+        strResult += tr("可执行：否\r\n");
+    }
+    //类型
+    strResult += tr("类型：%1\r\n").arg(fi.suffix());
+    //大小
+    strResult += tr("大小：%1 B\r\n").arg(fi.size());
+    //时间
+    QDateTime dtCreate = fi.created();
+    QDateTime dtModify = fi.lastModified();
+    strResult += tr("创建时间：%1\r\n").arg(dtCreate.toString("yyyy-MM-dd HH:mm:ss"));
+    strResult += tr("修改时间：%1\r\n").arg(dtModify.toString("yyyy-MM-dd HH:mm:ss"));
+
+    //返回
+    return strResult;
+}
+
+QString MainWindow::getFolderInfo(const QFileInfo &fi)
+{
+    QString strResult;  //用于返回的串
+    //判断文件夹信息
+    if(fi.isReadable()) //是否可读
+    {
+        strResult += tr("可读：是\r\n");
+    }
+    else
+    {
+        strResult += tr("可读：否\r\n");
+    }
+    if(fi.isWritable()) //是否可写
+    {
+        strResult += tr("可写：是\r\n");
+    }
+    else
+    {
+        strResult += tr("可写：否\r\n");
+    }
+    //时间
+    QDateTime dtCreate = fi.created();
+    QDateTime dtModify = fi.lastModified();
+    strResult += tr("创建时间：%1\r\n").arg(dtCreate.toString("yyyy-MM-dd HH:mm:ss"));
+    strResult += tr("修改时间：%1\r\n").arg(dtModify.toString("yyyy-MM-dd HH:mm:ss"));
+    //返回
+    return strResult;
+}
+
+void MainWindow::on_action_Database_triggered()
+{
+    QString strPath = QDir::currentPath();
+    strPath += tr("/SQLiteSpy.exe");
+    //
+    QProcess *process = new QProcess;
+    process->start(strPath);
+
+    emit loggerWrite("启动数据库管理软件：" + strPath);
+}
+
+void MainWindow::on_action_Parameter_triggered()
+{
+    emit loggerWrite("启动参数设置");
+}
+
+void MainWindow::on_action_AddMediumSpeed_triggered()
+{
+    emit loggerWrite("添加1Gbps中速PCIe窗口");
+}
+
+void MainWindow::on_action_AddSingleWire_triggered()
+{
+    emit loggerWrite("添加100Mbps单线PCIe窗口");
+}
+
+void MainWindow::on_action_AddTripleWire_triggered()
+{
+    emit loggerWrite("添加10Mbps三线PCIe窗口");
+}
+
+void MainWindow::on_action_Save_triggered()
+{
+    emit loggerWrite("保存软件参数");
 }

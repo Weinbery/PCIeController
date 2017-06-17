@@ -64,12 +64,14 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="action_Add_Device"/>
-   <addaction name="action_Setting"/>
-   <addaction name="action_Config"/>
-   <addaction name="action_Logger"/>
+   <addaction name="action_Save"/>
+   <addaction name="action_AddHighSpee"/>
+   <addaction name="action_AddMediumSpeed"/>
+   <addaction name="action_AddSingleWire"/>
+   <addaction name="action_AddTripleWire"/>
    <addaction name="action_Parameter"/>
    <addaction name="action_Curve"/>
+   <addaction name="action_Database"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBarWorkspace">
@@ -87,22 +89,22 @@
    <addaction name="action_Upper"/>
    <addaction name="action_Lookup"/>
   </widget>
-  <action name="action_Add_Device">
+  <action name="action_AddHighSpee">
    <property name="icon">
     <iconset resource="res.qrc">
      <normaloff>:/images/device.png</normaloff>:/images/device.png</iconset>
    </property>
    <property name="text">
-    <string>添加(&amp;A)</string>
+    <string>高速(&amp;H)</string>
    </property>
    <property name="toolTip">
-    <string>添加设备</string>
+    <string>添加高速PCIe窗口</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+A</string>
+    <string>Ctrl+H</string>
    </property>
   </action>
-  <action name="action_Setting">
+  <action name="action_Save">
    <property name="icon">
     <iconset resource="res.qrc">
      <normaloff>:/images/save.png</normaloff>:/images/save.png</iconset>
@@ -111,43 +113,31 @@
     <string>保存(&amp;S)</string>
    </property>
    <property name="toolTip">
-    <string>保存</string>
+    <string>保存参数</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+S</string>
+    <string>Ctrl+Shift+S</string>
    </property>
   </action>
-  <action name="action_Config">
+  <action name="action_Database">
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/images/file.png</normaloff>:/images/file.png</iconset>
+     <normaloff>:/images/database.png</normaloff>:/images/database.png</iconset>
    </property>
    <property name="text">
-    <string>配置(&amp;C)</string>
+    <string>数据库(&amp;D)</string>
    </property>
    <property name="toolTip">
-    <string>配置</string>
+    <string>数据库管理</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+C</string>
-   </property>
-  </action>
-  <action name="action_Logger">
-   <property name="icon">
-    <iconset resource="res.qrc">
-     <normaloff>:/images/paste.png</normaloff>:/images/paste.png</iconset>
-   </property>
-   <property name="text">
-    <string>日志(&amp;L)</string>
-   </property>
-   <property name="toolTip">
-    <string>日志</string>
+    <string>Ctrl+D</string>
    </property>
   </action>
   <action name="action_Parameter">
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/images/folder.png</normaloff>:/images/folder.png</iconset>
+     <normaloff>:/images/palette.png</normaloff>:/images/palette.png</iconset>
    </property>
    <property name="text">
     <string>参数(&amp;P)</string>
@@ -211,6 +201,51 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="action_AddMediumSpeed">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/images/device.png</normaloff>:/images/device.png</iconset>
+   </property>
+   <property name="text">
+    <string>中速(&amp;M)</string>
+   </property>
+   <property name="toolTip">
+    <string>添加1G中速PCIe</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="action_AddSingleWire">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/images/device.png</normaloff>:/images/device.png</iconset>
+   </property>
+   <property name="text">
+    <string>添加(&amp;S)</string>
+   </property>
+   <property name="toolTip">
+    <string>添加100M单线制PCIe</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="action_AddTripleWire">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/images/device.png</normaloff>:/images/device.png</iconset>
+   </property>
+   <property name="text">
+    <string>三线(&amp;T)</string>
+   </property>
+   <property name="toolTip">
+    <string>添加10M三线制PCIe</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
    </property>
   </action>
  </widget>

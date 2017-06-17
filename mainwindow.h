@@ -14,6 +14,14 @@
 #include <QHBoxLayout>
 #include <QFileDialog>
 #include <QDirModel>
+#include <QIcon>
+#include <QDir>
+#include <QFileInfo>
+#include <QDesktopServices>
+#include <QDateTime>
+#include <QProcess>
+#include "common.h"
+#include "logger.h"
 #include "mdichild.h"
 #include "highspeedwindow.h"
 
@@ -33,32 +41,46 @@ public:
 
     void setCurretWorkspace(QString strWorkspace);
 
+    enum ITypes {IDriver = 1999, IFolder = 2000, IFile = 2001};
+
 private:
     void createStatusBar();
-
     void createDockWindows();
+    void updateFileView(const QString strDir);
 
 protected:
     void closeEvent(QCloseEvent *event);
+signals:
+    void loggerWrite(const QString strContext);
 
 public slots:
     HighSpeedWindow *createMdiChild();
+    void loggerOutput(const QString strContext);
 
 private slots:
-    void on_action_Add_Device_triggered();
+    void on_action_AddHighSpee_triggered();
+    void on_action_AddMediumSpeed_triggered();
+    void on_action_AddSingleWire_triggered();
+    void on_action_AddTripleWire_triggered();
+    void on_action_Save_triggered();
+    void on_action_Database_triggered();
+    void on_action_Parameter_triggered();
     void on_action_Back_triggered();
     void on_action_Forward_triggered();
     void on_action_Upper_triggered();
     void on_action_Lookup_triggered();
-
     void on_action_Curve_triggered();
+    //
+    void on_listWidget_itemDoubleClicked(QListWidgetItem *item);
+    void on_listWidget_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
 
 private:
+    Logger *logger;
     QMdiArea *mdiArea;
     Ui::MainWindow *ui;
     QLabel *label;
-    QListWidget *customerList;
-    QTreeView* treeView;
+    QListWidget *listWidget;
+    QListWidget *logWidget;
     QTableView* tableView;
     QComboBox *comboWorkspace;
     QStringList comboDirList;
@@ -67,6 +89,13 @@ private:
 
 private:
     bool bControlWorkspace;
+    QIcon m_iconDriver;
+    QIcon m_iconFolder;
+    QIcon m_iconFile;
+    QDir  m_dirCur;
+    void showItem(const QDir& dir);
+    QString getFileInfo(const QFileInfo& fi);
+    QString getFolderInfo(const QFileInfo& fi);
 };
 
 #endif // MAINWINDOW_H

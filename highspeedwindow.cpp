@@ -10,8 +10,8 @@ HighSpeedWindow::HighSpeedWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    strCurrentWindow = tr("高速PCIe窗口%1").arg(sequenceNumber++);
-    setWindowTitle(strCurrentWindow);
+    strWindowTitle = tr("高速PCIe窗口%1").arg(sequenceNumber++);
+    setWindowTitle(strWindowTitle);
 
     QStringList comboSendType;
     comboSendType << "PCIe发送" << "发送文件";
@@ -33,7 +33,12 @@ QSize HighSpeedWindow::sizeHint() const
     return QSize(320, 240);
 }
 
-QString HighSpeedWindow::getFile()
+QString HighSpeedWindow::getWindowTitle() const
+{
+    return strWindowTitle;
+}
+
+QString HighSpeedWindow::getFile() const
 {
     return strFile;
 }
