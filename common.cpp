@@ -2,7 +2,7 @@
 
 char* global_PCIeParameterName[DMA_PARAM_SIZE];
 
-void InitPCIeParameter()
+void initPCIeParameter()
 {
 	//初始化PCIe板卡需要操作的参数名称
 	global_PCIeParameterName[0] = PCIE_RECV_START;
@@ -50,18 +50,3 @@ bool createMultipleDirectory(const QString strPath)
         return bOk;
     }
 }
-/**
- * bool isDirExist(QString fullPath)
-{
-    QDir dir(fullPath);
-    if(dir.exists())
-    {
-      return true;
-    }
-    else
-    {
-       bool ok = dir.mkpath(fullPath);//创建多级目录
-       return ok;
-    }
-}
- * /

@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -38,14 +38,17 @@ SOURCES += main.cpp\
     highspeedwindow.cpp \
     pciexpress.cpp \
     highspeedoperation.cpp \
-    common.cpp
+    common.cpp \
+    logger.cpp
 
 HEADERS  += mainwindow.h \
     mdichild.h \
     highspeedwindow.h \
     pciexpress.h \
     highspeedoperation.h \
-    common.h
+    common.h \
+    logger.h \
+    sqlitedatabase.h
 
 FORMS    += mainwindow.ui \
     highspeedwindow.ui

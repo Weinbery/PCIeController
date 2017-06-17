@@ -1,18 +1,21 @@
-#define COMMON_H
+#ifndef COMMON_H
 #define COMMON_H
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <map>
 #include <list>
 #include <vector>
 #include <string>
 #include <QtCore>
 #include <QThread>
+#include <windows.h>
 
 using namespace std;
 
 #define		THREAD_STACK_SIZE				1 * 1024 * 1024		// 线程堆栈大小
 #define		DMA_DATA_SIZE					1 * 1024 * 1024		// 每次从DMA中读取的数据量
-#define		DMAtrRANSFER_SIZE				(224 * 1024)		// 每次下传至DMA的数据量
+#define		DMA_TRANSFER_SIZE				(224 * 1024)		// 每次下传至DMA的数据量
 #define		DMA_PARAM_SIZE					24					// 寄存器配置参数的个数
 #define		DMA_WRITE_BUFFER_MAX_SIZE		64 * 1024 * 1024	// 硬件本身128M，在此取1/2就够用了。
 #define		FIFO_OVER_FLOW					255 * 1024 * 1024	// FIFO溢出的界限
@@ -28,13 +31,13 @@ using namespace std;
 #define		REGISTER_CRC_ADDR_CH2			0x94
 
 // 发送文件需要定义的相关偏移
-#define		REGISTERtrRANSFERtrYPE			0xC0	// 定义发送类型
+#define		REGISTER_TRANSFER_TYPE			0xC0	// 定义发送类型
 #define		REGISTER_DATA_FIELD				0xC4	// 数据域填充码标志
-#define		REGISTERtrRANSFER_VALID_SIZE	0xC8	// 本次发送的有效数据长度
-#define		REGISTERtrRANSFER_SIZE			0xCC	// 本次发送的数据长度
-#define		REGISTERtrRANSFER_FILEtrOTAL	0xD0	// 发送文件的总字节数
-#define		REGISTERtrRANSFER_FILE_OVER		0xD4	// 文件发送完成标志，0x01表示文件已经发送完成或者停止发送文件
-#define		REGISTERtrRANSFERtrOTAL_FRAME	0xD8	// 每次发送文件的总帧数
+#define		REGISTER_TRANSFER_VALID_SIZE	0xC8	// 本次发送的有效数据长度
+#define		REGISTER_TRANSFER_SIZE			0xCC	// 本次发送的数据长度
+#define		REGISTER_TRANSFER_FILE_TOTAL	0xD0	// 发送文件的总字节数
+#define		REGISTER_TRANSFER_FILE_OVER		0xD4	// 文件发送完成标志，0x01表示文件已经发送完成或者停止发送文件
+#define		REGISTER_TRANSFER_TOTAL_FRAME	0xD8	// 每次发送文件的总帧数
 
 #define		PCIE_PATH_SIZE					256		// 自定义路径最大长度，类似MAX_PATH
 #define		PCIE_HIGH_SPEED_FRAME_SIZE		276		// 单线制/2G高速的有效数据长度
@@ -42,7 +45,7 @@ using namespace std;
 #define		PCIE_SINGLE_WIRE_FRAME_SIZE		274		// 单线制/2G高速的有效数据长度
 #define		PCIEtrRIPLE_WIRE_FRAME_SIZE		273		// 三线制有效数据长度
 
-#define		PCIEtrRIPLE_BUFFER_SIZE			16 * 1024 * 1024	// 三线制缓存
+#define		PCIE_TRIPLE_BUFFER_SIZE			16 * 1024 * 1024	// 三线制缓存
 #define		PCIE_SINGLE_BUFFER_SIZE			32 * 1024 * 1024	// 单线制缓存
 #define		PCIE_MEDIUM_BUFFER_SIZE			128 * 1024 * 1024	// 中速1Gbps缓存
 #define		PCIE_HIGH_BUFFER_SIZE			256 * 1024 * 1024	// 高速2Gbps缓存
@@ -56,14 +59,14 @@ using namespace std;
 #define		PCIE_APP_MANUAL					tr("PCIe控制器用户手册.pdf")         // 用户手册
 
 #define		PCIE_SAVE_PATH					tr("SAVE_PATH")
-#define		PCIEtrRANSFER_FILE				tr("TRANSFER_FILE")
+#define		PCIE_TRANSFER_FILE				tr("TRANSFER_FILE")
 // 高速常规参数
 #define		PCIE_SRC_ADDR_OFFSET			tr("SRC_ADDR_OFFSET")
 #define		PCIE_SRC_ADDR_VALUE				tr("SRC_ADDR_VALUE")
 #define		PCIE_DST_ADDR_OFFSET			tr("DST_ADDR_OFFSET")
 #define		PCIE_DST_ADDR_VALUE				tr("DST_ADDR_VALUE")
-#define		PCIEtrYPE_STATE_OFFSET			tr("TYPE_STATE_OFFSET")
-#define		PCIEtrYPE_STATE_VALUE			tr("TYPE_STATE_VALUE")
+#define		PCIE_TYPE_STATE_OFFSET			tr("TYPE_STATE_OFFSET")
+#define		PCIE_TYPE_STATE_VALUE			tr("TYPE_STATE_VALUE")
 #define		PCIE_RATE_ID_OFFSET				tr("RATE_ID_OFFSET")
 #define		PCIE_RATE_ID_VALUE				tr("RATE_ID_VALUE")
 #define		PCIE_VALID_LENGTH_OFFSET		tr("VALID_LENGTH_OFFSET")
@@ -83,8 +86,8 @@ using namespace std;
 #define		PCIE_SRC_ADDR_VALUE_CH2			tr("SRC_ADDR_VALUE_CH2")
 #define		PCIE_DST_ADDR_OFFSET_CH2		tr("DST_ADDR_OFFSET_CH2")
 #define		PCIE_DST_ADDR_VALUE_CH2			tr("DST_ADDR_VALUE_CH2")
-#define		PCIEtrYPE_STATE_OFFSET_CH2		tr("TYPE_STATE_OFFSET_CH2")
-#define		PCIEtrYPE_STATE_VALUE_CH2		tr("TYPE_STATE_VALUE_CH2")
+#define		PCIE_TYPE_STATE_OFFSET_CH2		tr("TYPE_STATE_OFFSET_CH2")
+#define		PCIE_TYPE_STATE_VALUE_CH2		tr("TYPE_STATE_VALUE_CH2")
 #define		PCIE_RATE_ID_OFFSET_CH2			tr("RATE_ID_OFFSET_CH2")
 #define		PCIE_RATE_ID_VALUE_CH2			tr("RATE_ID_VALUE_CH2")
 #define		PCIE_VALID_LENGTH_OFFSET_CH2	tr("VALID_LENGTH_OFFSET_CH2")
@@ -95,8 +98,8 @@ using namespace std;
 #define		PCIE_FRAME_HEAD_OFFSET			tr("FRAME_HEAD_OFFSET")
 #define		PCIE_FRAME_HEAD_VALUE			tr("FRAME_HEAD_VALUE")
 
-#define		PCIEtrOTAL_FRAME_OFFSET			tr("TOTAL_FRAME_OFFSET")
-#define		PCIEtrOTAL_FRAME_VALUE			tr("TOTAL_FRAME_VALUE")
+#define		PCIE_TOTAL_FRAME_OFFSET			tr("TOTAL_FRAME_OFFSET")
+#define		PCIE_TOTAL_FRAME_VALUE			tr("TOTAL_FRAME_VALUE")
 
 #define		PCIE_RECV_START					"rec_start"				// 接收使能，bit0：‘0’—不使能；‘1’—使能。bit31~bit1：预留
 #define		PCIE_RECV_MODE					"rec_mode"				// 接收模式设置，bit[2:0]: //‘001’：主份模式  //‘010’：备份模式 //‘100’：主备模式 //bit31~bit3：预留
@@ -109,7 +112,7 @@ using namespace std;
 #define		PCIE_POST_DOUT					"post_dout"				// 数据端口：RO //当0x54不空或者0x58数据量不为零，即可从此地址端口读数据，存文件
 #define		PCIE_DATA_SRC					"data_src"
 #define		PCIE_DATA_DST					"data_dst"
-#define		PCIEtrYPE_STATE					"data_info"
+#define		PCIE_TYPE_STATE					"data_info"
 #define		PCIE_RATE_ID					"rate_identifier"	
 #define		PCIE_VALID_LENGTH				"valid_length"
 #define		PCIE_FRAME_GAP					"frame_gap"
@@ -117,7 +120,7 @@ using namespace std;
 // 0233中速(100Mbps)新增寄存器读写参数
 #define		PCIE_DATA_SRC_CH2				"data_src_ch2"
 #define		PCIE_DATA_DST_CH2				"data_dst_ch2"
-#define		PCIEtrYPE_STATE_CH2				"data_info_ch2"
+#define		PCIE_TYPE_STATE_CH2				"data_info_ch2"
 #define		PCIE_RATE_ID_CH2				"rate_identifier_ch2"	
 #define		PCIE_VALID_LENGTH_CH2			"valid_length_ch2"
 #define		PCIE_FRAME_GAP_CH2				"frame_gap_ch2"
@@ -127,7 +130,7 @@ using namespace std;
 // 0215中速(1024Mbps)新增寄存器读写参数
 #define		PCIE_FRAME_HEAD					"frame_head"
 
-#define		PCIEtrOTAL_FRAME				"total_frame"
+#define		PCIE_TOTAL_FRAME				"total_frame"
 
 typedef struct _PCIeDeviceInfo
 {
@@ -174,37 +177,37 @@ typedef struct _CoupleParameter
 
 typedef std::map<std::string, CoupleParameter> CoupleParameterMap;
 
-typedef enum trRANSFERtrYPE
+typedef enum _TRANSFER_TYPE
 {
-    NONEtrYPEtrRANSFER = 0,
-    PCIE_AUTOtrRANSFER,			// PCIe自动发送模式
-    UPPER_MONITERtrRANSFER,		// 上位机软件发送模式
-}TRANSFERtrYPE;
+    NONE_TYPE_TRANSFER = 0,
+    PCIE_AUTO_TRANSFER,			// PCIe自动发送模式
+    UPPER_MONITER_TRANSFER,		// 上位机软件发送模式
+}TRANSFER_TYPE;
 
 typedef enum _DATA_FIELD
 {
-    NONEtrYPE_FIELD = 0,		// 无类型
+    NONE_TYPE_FIELD = 0,		// 无类型
 	ACCUMULATION_FIELD,			// 累加数
 	RANDOM_NUMBER_FIELD,		// 随机数
 	BLANK_FRAME_FIELD,			// 空帧
 }DATA_FIELD;
 
-typedef struct trRANSFER_PARAMETER
+typedef struct _TRANSFER_PARAMETER
 {
-    TRANSFERtrYPE	eTransferType;
+    TRANSFER_TYPE	eTransferType;
 	DATA_FIELD		eDataField;
-	CString			strTransferFile;
-    trRANSFER_PARAMETER() {
-        eTransferType = NONEtrYPEtrRANSFER;
-        eDataField = NONEtrYPE_FIELD;
-        strTransferFile = tr("");
+    QString			strTransferFile;
+    _TRANSFER_PARAMETER() {
+        eTransferType = NONE_TYPE_TRANSFER;
+        eDataField = NONE_TYPE_FIELD;
+        strTransferFile = "";
 	}
 }TRANSFER_PARAMETER, *PTRANSFER_PARAMETER;
 
 extern char* global_PCIeParameterName[DMA_PARAM_SIZE];
 
 // 初始化各配置寄存器参数
-void InitPCIeParameter();
+void initPCIeParameter();
 
 // 创建多级目录函数
 bool createMultipleDirectory(const QString strPath);

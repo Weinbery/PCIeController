@@ -14,8 +14,8 @@ using namespace std;
 #define		DMA_BLOCK_SIZE			(224 * 1024)
 #define		DMA_BUFFER_SIZE			(1024 * 1024)
 
-#define		VENDORID				0x10EE  // 厂商编号
-#define		DEVICEID				0x0007	// 设备编号
+#define		VENDORID				0x10EE
+#define		DEVICEID				0x0007
 
 #define		WDC_LICENSESTR			"6C3CC2CFE89E7AD0424A070D434A6F6DC495654A.gkhy" // 6C3CC2CFE89E7AD0424A070D434A6F6DC495654A.gkhy
 
@@ -25,24 +25,18 @@ typedef struct _PCIeResult
 	DWORD						dwCounter;
 	WD_INTERRUPT_WAIT_RESULT	waitResult;
 }PCIeResult, *PPCIeResult;
-/**
- * 中断函数指针定义
- */
+
 typedef void (*PCIINT_HANDLER)(WDC_DEVICE_HANDLE hDev, PPCIeResult pResult);
-/**
- * 事件触发函数指针定义
- */
+
 typedef void (*PCIEVENT_HANDLER)(WDC_DEVICE_HANDLE hDev, DWORD dwAction);
-/**
-* 设备上下文结构体
-*/
+
 typedef struct _PCIeDeviceCTX
 {
-	UINT				nReadSize;		// 当前读长度，对于DMA来说是写DMA的长度
-	UINT				nReadCount;		// 当前读块数，对于DMA来说是写块数
-	UINT				nWriteCount;	// 当前写块数，对于DMA来说是读块数
-	HANDLE				hReadEvent;		// 读中断事件
-	HANDLE				hWriteEvent;	// 写中断事件
+    UINT				nReadSize;
+    UINT				nReadCount;
+    UINT				nWriteCount;
+    HANDLE				hReadEvent;
+    HANDLE				hWriteEvent;
 	WD_TRANSFER*		pIntTransCmds;
 	PCIINT_HANDLER		funcDiagIntHandler;
 	PCIEVENT_HANDLER	funcDiagEventHandler;
@@ -68,29 +62,26 @@ typedef struct _PCIeParameter
 	WDC_DEVICE_HANDLE	hDevHandle;
 }PCIeParameter, *PPCIeParameter;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-	BOOL __declspec(dllexport) DisplayCards(std::list<WD_PCI_CARD_INFO> &pcieCardlist);
-	BOOL __declspec(dllexport) GetCards(std::list<PCIeParameter> &pcieCardlist);
-	BOOL __declspec(dllexport) DisplayCard(WD_PCI_CARD_INFO *pCardInfo);
-	BOOL __declspec(dllexport) GetCard(PCIeParameter *pCard);
-	void __declspec(dllexport) InitDevice(PCIeParameter *pCard);
-	BOOL __declspec(dllexport) InitHandle(PCIeParameter *pCard);
-	BOOL __declspec(dllexport) Open(PCIeParameter *pCard);
-	BOOL __declspec(dllexport) PrepareTransfer(PCIeParameter *pCard);
-	UINT __declspec(dllexport) Write(PCIeParameter *pCard, BYTE* pBuffer, UINT nSize);
-	BOOL __declspec(dllexport) CompleteTransfer(PCIeParameter *pCard);
-	BOOL __declspec(dllexport) PrepareRead(PCIeParameter *pCard);
-	UINT __declspec(dllexport) Read(PCIeParameter *pCard, BYTE* pBuf, UINT nSize, int nIndex);
-	BOOL __declspec(dllexport) CompleteRead(PCIeParameter *pCard);  
-	void __declspec(dllexport) StartRead(PCIeParameter *pCard);
-	void __declspec(dllexport) StopRead(PCIeParameter *pCard);
-	void __declspec(dllexport) StartTransfer(PCIeParameter *pCard);
-	void __declspec(dllexport) StopTransfer(PCIeParameter *pCard);
-	UINT __declspec(dllexport) ReadRegister(PCIeParameter *pCard, UINT nOffset);
-	BOOL __declspec(dllexport) WriteRegister(PCIeParameter *pCard, UINT nOffset, UINT nValue);
-	void __declspec(dllexport) Close(PCIeParameter *pCard);
-#ifdef __cplusplus
-}
+
+BOOL DisplayCards(std::list<WD_PCI_CARD_INFO> &pcieCardlist);
+BOOL GetCards(std::list<PCIeParameter> &pcieCardlist);
+BOOL DisplayCard(WD_PCI_CARD_INFO *pCardInfo);
+BOOL GetCard(PCIeParameter *pCard);
+void InitDevice(PCIeParameter *pCard);
+BOOL InitHandle(PCIeParameter *pCard);
+BOOL Open(PCIeParameter *pCard);
+BOOL PrepareTransfer(PCIeParameter *pCard);
+UINT Write(PCIeParameter *pCard, BYTE* pBuffer, UINT nSize);
+BOOL CompleteTransfer(PCIeParameter *pCard);
+BOOL PrepareRead(PCIeParameter *pCard);
+UINT Read(PCIeParameter *pCard, BYTE* pBuf, UINT nSize, int nIndex);
+BOOL CompleteRead(PCIeParameter *pCard);
+void StartRead(PCIeParameter *pCard);
+void StopRead(PCIeParameter *pCard);
+void StartTransfer(PCIeParameter *pCard);
+void StopTransfer(PCIeParameter *pCard);
+UINT ReadRegister(PCIeParameter *pCard, UINT nOffset);
+BOOL WriteRegister(PCIeParameter *pCard, UINT nOffset, UINT nValue);
+void Close(PCIeParameter *pCard);
+
 #endif // PCIEXPRESS_H
