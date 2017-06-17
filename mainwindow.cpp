@@ -127,6 +127,9 @@ void MainWindow::on_action_AddHighSpee_triggered()
 {
     static int nOffset = 0;
     HighSpeedWindow *child = createMdiChild();
+    // 日志信号之间连接
+    connect(child, SIGNAL(loggerWrite(QString)), this, SIGNAL(loggerWrite(QString)));
+    //
     child->resize(320 + nOffset, 240 + nOffset);
     nOffset += 10;
     child->show();

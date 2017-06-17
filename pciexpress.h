@@ -1,9 +1,12 @@
 #ifndef PCIEXPRESS_H
 #define PCIEXPRESS_H
 
-#include <windows.h>
+#include <map>
 #include <list>
+#include <stdio.h>
 #include <stdlib.h>
+#include <windows.h>
+// lib from winDriver
 #include "wdc_defs.h"
 #include "wdc_lib.h"
 
@@ -83,5 +86,9 @@ void StopTransfer(PCIeParameter *pCard);
 UINT ReadRegister(PCIeParameter *pCard, UINT nOffset);
 BOOL WriteRegister(PCIeParameter *pCard, UINT nOffset, UINT nValue);
 void Close(PCIeParameter *pCard);
+
+//	static list<PCIeParameter>					m_pCardList;
+// static map<std::string, PPCIeParameter>		m_mapCardStrParameter;
+BOOL GetPCIExpressList(map<std::string, PPCIeParameter> &mapCardStrParameter);
 
 #endif // PCIEXPRESS_H

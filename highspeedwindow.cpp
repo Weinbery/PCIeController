@@ -21,6 +21,7 @@ HighSpeedWindow::HighSpeedWindow(QWidget *parent) :
 
     ui->radioButtonAcc->setChecked(true);
     //ui->radioButtonAcc->setVisible(false);
+    pciexpress = new HighSpeedOperation();
 }
 
 HighSpeedWindow::~HighSpeedWindow()
@@ -78,5 +79,68 @@ void HighSpeedWindow::on_comboBoxSendType_currentIndexChanged(int index)
         ui->radioButtonAcc->setVisible(false);
         ui->radioButtonRandom->setVisible(false);
         ui->radioButtonBlank->setVisible(false);
+    }
+}
+
+void HighSpeedWindow::on_pushButtonOpenPCIe_clicked()
+{
+
+}
+
+void HighSpeedWindow::on_pushButtonClosePCIe_clicked()
+{
+
+}
+
+void HighSpeedWindow::on_pushButtonStartRecv_clicked()
+{
+
+}
+
+void HighSpeedWindow::on_pushButtonStartSend_clicked()
+{
+
+}
+
+void HighSpeedWindow::on_pushButtonReadRegister_clicked()
+{
+    if (NULL != pciexpress && NULL != pciexpress->m_pCard)
+    {
+        if (!pciexpress->m_pCard->bOpen)
+        {
+            return ;
+        }
+        quint32 nOffset = ui->lineEditRegisterOffset->text().toInt(0, 16);
+        quint32 nValue = ReadRegister(pciexpress->m_pCard, nOffset);
+        ui->lineEditRegisterValue->setText(QString::number(nValue, 16));
+    }
+}
+
+void HighSpeedWindow::on_pushButtonWriteRegister_clicked()
+{
+    quint32 nOffset = ui->lineEditRegisterOffset->text().toInt(0, 16);
+    quint32 nValue = ui->lineEditRegisterValue->text().toInt(0, 16);
+
+    emit loggerWrite(tr("%1，寄存器写入，nOffset = 0x%2，nValue = 0x%3")
+                         .arg(getWindowTitle())
+                         .arg(QString::number(nOffset, 16))
+                         .arg(QString::number(nValue, 16)));
+
+    if (NULL != pciexpress && NULL != pciexpress->m_pCard)
+    {
+        if (!pciexpress->m_pCard->bOpen)
+        {
+            return ;
+        }
+        quint32 nOffset = ui->lineEditRegisterOffset->text().toInt(0, 16);
+        quint32 nValue = ui->lineEditRegisterValue->text().toInt(0, 16);
+
+        if (WriteRegister(pciexpress->m_pCard, nOffset, nValue))
+        {
+            emit loggerWrite(tr("%1，寄存器写入，nOffset = 0x%2，nValue = 0x%3")
+                             .arg(getWindowTitle())
+                             .arg(QString::number(nOffset, 16))
+                             .arg(QString::number(nValue, 16)));
+        }
     }
 }

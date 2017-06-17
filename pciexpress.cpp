@@ -534,3 +534,33 @@ void Close(PCIeParameter *pCard)
 
 	::DeleteCriticalSection(&pCard->criticalSection);
 }
+
+BOOL GetPCIExpressList(map<std::string, PPCIeParameter> &mapCardStrParameter)
+{
+    list<PCIeParameter> pCardList;
+    if(!GetCards(pCardList))
+    {
+        return false;
+    }
+    list<PCIeParameter>::iterator iter = pCardList.begin();
+    for(; iter != pCardList.end(); iter++)
+    {
+        WD_PCI_CARD_INFO *pCardInfo = NULL;
+        WD_PCI_SLOT *pciSlot = NULL;
+        pCardInfo = &(iter->pcieCardInfo);
+        pciSlot = &(pCardInfo->pciSlot);
+        char szItem[256] = {0x00};
+        sprintf(szItem, "PCI Express Bus:%d", pciSlot->dwBus);
+        //QString strItem = tr("PCI Express Bus:%d").arg(pciSlot->dwBus);
+        //string strIndex = strItem.toLocal8Bit().data();
+        map<std::string, PPCIeParameter>::iterator iterm;
+        iterm = mapCardStrParameter.find(szItem);
+        if(iterm != mapCardStrParameter.end())
+        {
+            continue;
+        }
+        mapCardStrParameter.insert(make_pair(szItem, (PPCIeParameter)&(*iter)));
+    }
+
+    return TRUE;
+}

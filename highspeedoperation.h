@@ -52,8 +52,6 @@ public:
 		m_transferParameter = transferParameter;
 	}
 
-    static BOOL initPCIeDeviceList();
-
     static DWORD WINAPI onTransfer(LPVOID lpParameter);
 
     static DWORD WINAPI onReceive(LPVOID lpParameter);
@@ -69,9 +67,6 @@ public:
 	BOOL					m_bWriteStop;
     QString					m_strSavePath;
     QString					m_strTimeStamp;
-
-	static list<PCIeParameter>					m_pCardList;
-	static map<std::string, PPCIeParameter>		m_mapCardStrParameter;
 
 public:
 	BYTE*					m_pBuffer;

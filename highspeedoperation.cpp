@@ -1,8 +1,5 @@
 #include "highspeedoperation.h"
 
-std::list<PCIeParameter> HighSpeedOperation::m_pCardList;
-std::map<std::string, PPCIeParameter> HighSpeedOperation::m_mapCardStrParameter;
-
 HighSpeedOperation::HighSpeedOperation()
 {
 	m_nOffset = 0;
@@ -150,34 +147,6 @@ BOOL HighSpeedOperation::closeCard()
 		m_pCard->bOpen = FALSE;
 		m_bCardOpen = FALSE;
 		Close(m_pCard);
-	}
-
-	return TRUE;
-}
-
-BOOL HighSpeedOperation::initPCIeDeviceList()
-{
-	if(!GetCards(m_pCardList))
-	{
-		return false;
-	}
-	std::list<PCIeParameter>::iterator iter = m_pCardList.begin();
-	for(; iter != m_pCardList.end(); iter++)
-	{
-		std::string strIndex;
-		WD_PCI_CARD_INFO *pCardInfo = NULL;
-		WD_PCI_SLOT *pciSlot = NULL;
-		pCardInfo = &(iter->pcieCardInfo);
-		pciSlot = &(pCardInfo->pciSlot);
-        QString strItem = tr("PCI Express Bus:%d").arg(pciSlot->dwBus);
-        strIndex = strItem.toLocal8Bit().data();
-		std::map<std::string, PPCIeParameter>::iterator iterm;
-		iterm = m_mapCardStrParameter.find(strIndex);
-		if(iterm != m_mapCardStrParameter.end()) 
-		{
-			continue;
-		}
-		m_mapCardStrParameter.insert(make_pair(strIndex, (PPCIeParameter)&(*iter)));
 	}
 
 	return TRUE;

@@ -98,7 +98,7 @@
     <string>高速(&amp;H)</string>
    </property>
    <property name="toolTip">
-    <string>添加高速PCIe窗口</string>
+    <string>添加2Gbps高速PCIe窗口</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+H</string>
@@ -212,7 +212,7 @@
     <string>中速(&amp;M)</string>
    </property>
    <property name="toolTip">
-    <string>添加1G中速PCIe</string>
+    <string>添加1Gbps中速PCIe窗口</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
@@ -224,10 +224,10 @@
      <normaloff>:/images/device.png</normaloff>:/images/device.png</iconset>
    </property>
    <property name="text">
-    <string>添加(&amp;S)</string>
+    <string>单线(&amp;S)</string>
    </property>
    <property name="toolTip">
-    <string>添加100M单线制PCIe</string>
+    <string>添加100M单线制PCIe窗口</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -242,7 +242,7 @@
     <string>三线(&amp;T)</string>
    </property>
    <property name="toolTip">
-    <string>添加10M三线制PCIe</string>
+    <string>添加10M三线制PCIe窗口</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
