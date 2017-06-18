@@ -20,7 +20,7 @@ using namespace std;
 #define		DMA_WRITE_BUFFER_MAX_SIZE		64 * 1024 * 1024	// 硬件本身128M，在此取1/2就够用了。
 #define		FIFO_OVER_FLOW					255 * 1024 * 1024	// FIFO溢出的界限
 #define		DDR_BUFFER_SIZE					128
-#define		TRIPLE_WIRE_READ_SIZE           (224 * 768)				// 三线制
+#define		TRIPLE_WIRE_READ_SIZE           (224 * 768)			// 三线制
 // 单线制通道1信息
 #define		REGISTER_SEND_ADDR_CH1			0x7C
 #define		REGISTER_RECV_ADDR_CH1			0x80
@@ -207,7 +207,7 @@ typedef struct _TRANSFER_PARAMETER
 extern char* global_PCIeParameterName[DMA_PARAM_SIZE];
 
 // 初始化各配置寄存器参数
-void initPCIeParameter();
+void initPCIeConfigParameter();
 
 // 创建多级目录函数
 bool createMultipleDirectory(const QString strPath);

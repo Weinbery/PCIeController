@@ -26,17 +26,15 @@ static bool createSqliteConnection()
         QMessageBox::critical(NULL, QObject::tr("失败"), QObject::tr("创建运行日志表失败!"));
         return false;
     }
-    bOk = query.exec("create table if not exists tbl_mdiarea(diagram text PRIMARY KEY NOT NULL,"
-                     "type INTEGER NOT NULL,"
-                     "offset1 text, value1 text,"
-                     "offset2 text, value2 text,"
-                     "offset3 text, value3 text,"
-                     "offset4 text, value4 text,"
-                     "offset5 text, value5 text,"
-                     "offset6 text, value6 text,"
-                     "offset7 text, value7 text,"
-                     "offset8 text, value8 text,"
-                     "offset9 text, value9 text)");
+    bOk = query.exec("create table if not exists tbl_highspeed(windowTitle text PRIMARY KEY NOT NULL,"
+                     "typeId INTEGER NOT NULL,"
+                     "srcAddrOffset varchar(10), srcAddrValue varchar(10),"
+                     "dstAddrOffset varchar(10), dstAddrValue varchar(10),"
+                     "typeStateOffset varchar(10), typeStateValue varchar(10),"
+                     "velocityIdOffset varchar(10), velocityIdValue varchar(10),"
+                     "validSizeOffset5 varchar(10), validSizeValue varchar(10),"
+                     "timeGapOffset varchar(10), timeGapValue varchar(10),"
+                     "startOrstopOffset varchar(10), startOrstopValue varchar(10))");
     if (!bOk)
     {
         QMessageBox::critical(NULL, QObject::tr("失败"), QObject::tr("创建多文档区域表!"));

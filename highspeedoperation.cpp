@@ -7,6 +7,7 @@ HighSpeedOperation::HighSpeedOperation()
 	m_bRecvStop = TRUE;
 	m_bSaveStop = TRUE;
 	m_bWriteStop = TRUE;
+    m_bCardOpen = FALSE;
 	m_nBlockSize = DMA_DATA_SIZE;
 	for(size_t i = 0; i < PHYSIC_MEMORY_NUMBER; i++)
 	{
@@ -25,7 +26,13 @@ HighSpeedOperation::HighSpeedOperation()
 
 HighSpeedOperation::~HighSpeedOperation(void)
 {
-
+    if (NULL != m_pBuffer)
+    {
+        delete[] m_pBuffer;
+        m_pBuffer = NULL;
+    }
+    //
+    clearEvent();
 }
 
 void HighSpeedOperation::run()
@@ -57,10 +64,11 @@ void HighSpeedOperation::run()
             //
             if (m_nFileSize >= PCIE_ABOVE_NORMAL_FILE_SIZE)
             {
+                m_nFileSize = 0;
                 fflush(m_pFile);
                 fclose(m_pFile);
                 QString	strFileName = tr("_%1.dat").arg(m_pcieDeviceInfo.dwFileCount);
-                strFileName = m_strSavePath + m_strTimeStamp + strFileName;
+                strFileName = m_strSavePath + "/" + m_strTimeStamp + strFileName;
                 fopen_s(&m_pFile, strFileName.toLocal8Bit().data(), "wb");
                 if (m_pFile == NULL)
                 {
@@ -75,17 +83,14 @@ void HighSpeedOperation::run()
         }
     }
 
-    m_bSaveStop = TRUE;
-}
+    m_nFileSize = 0;
+    fflush(m_pFile);
+    fclose(m_pFile);
 
-void HighSpeedOperation::createFileDirectory(const QString strSavePath)
-{
-    QString strDir = tr("high_speed");
-	m_strSavePath = strSavePath + strDir;
-	// 
-    if (!createMultipleDirectory(m_strSavePath))
+    if (NULL != pSaveBuffer)
     {
-        emit loggerWrite(tr("failed to create high_speed"));
+        delete[] pSaveBuffer;
+        pSaveBuffer = NULL;
     }
 }
 
@@ -182,12 +187,16 @@ BOOL HighSpeedOperation::startReceive()
 	m_pcieDeviceInfo.dwFileCount = 0;
 
     QString	strFileName = tr("_%1.dat").arg(m_pcieDeviceInfo.dwFileCount);
-    strFileName = m_strSavePath + m_strTimeStamp + strFileName;
+    strFileName = m_strSavePath + "/" + m_strTimeStamp + strFileName;
     fopen_s(&m_pFile, strFileName.toLocal8Bit().data(), "wb");
     if (m_pFile == NULL)
     {
         return FALSE;
     }
+
+    //
+    m_bSaveStop = FALSE;
+    start(QThread::HighestPriority);
 
     buildEvent();
 
@@ -199,18 +208,15 @@ BOOL HighSpeedOperation::startReceive()
 	m_pThis[0].pThis = this;
     HANDLE hRecvMasterThread = CreateThread(NULL, THREAD_STACK_SIZE, (LPTHREAD_START_ROUTINE)onReceive, &m_pThis[0], 0, &dwThreadID);
 	SetThreadPriority(hRecvMasterThread, THREAD_PRIORITY_HIGHEST);
-	SetThreadAffinityMask(hRecvMasterThread, 1); // CPU:1
+    //SetThreadAffinityMask(hRecvMasterThread, 1); // CPU:1
 	// 
 	m_pThis[1].nIndex = 1;
 	m_pThis[1].pThis = this;
     HANDLE hRecvMinorThread = CreateThread(NULL, THREAD_STACK_SIZE, (LPTHREAD_START_ROUTINE)onReceive, &m_pThis[1], 0, &dwThreadID);
 	SetThreadPriority(hRecvMinorThread, THREAD_PRIORITY_HIGHEST);
-	SetThreadAffinityMask(hRecvMinorThread, 2); // CPU:2
+    //SetThreadAffinityMask(hRecvMinorThread, 2); // CPU:2
 	// 
 	SetEvent(m_hRecvEvent[0]);
-    //
-	m_bSaveStop = FALSE;
-    start(QThread::HighestPriority);
 
 	return TRUE;
 }
@@ -230,11 +236,9 @@ BOOL HighSpeedOperation::stopReceive()
 	CompleteRead(m_pCard);
 
 	m_RegisterLock.lock();
-
-	m_pcieDeviceInfo.dwGroupAWriteCount = ReadRegister(m_pCard, REGISTER_SEND_ADDR_CH1);
+    m_pcieDeviceInfo.dwGroupAWriteCount = ReadRegister(m_pCard, REGISTER_SEND_ADDR_CH1);
 	m_pcieDeviceInfo.dwGroupARecvCount = ReadRegister(m_pCard, REGISTER_RECV_ADDR_CH1);
 	m_pcieDeviceInfo.dwGroupACrcErrorCount = ReadRegister(m_pCard, REGISTER_CRC_ADDR_CH1);
-
 	m_RegisterLock.unlock();
 
     m_bSaveStop = TRUE;
@@ -277,19 +281,15 @@ BOOL HighSpeedOperation::startWrite()
         fseek(m_qFile, 0L, SEEK_END);
         quint64 nFileSize = ftell(m_qFile);
         fseek(m_qFile, 0L, SEEK_SET);
-
         if (nFileSize > 64 * 1024 * 1024)
 		{
 			return FALSE;
 		}
-
 		size_t nTotalFrame = nFileSize / PCIE_HIGH_SPEED_FRAME_SIZE;
 		WriteRegister(m_pCard, REGISTER_TRANSFER_TOTAL_FRAME, nTotalFrame);
-
 		m_nTotalSize = 0;
-
 		m_bWriteStop = FALSE; 
-
+        //
 		DWORD dwThreadID = 0;
         HANDLE hTransferThread = CreateThread(NULL, THREAD_STACK_SIZE, (LPTHREAD_START_ROUTINE)onTransfer, this, 0, &dwThreadID);
 	}
@@ -316,23 +316,18 @@ BOOL HighSpeedOperation::startWrite()
 	iter = m_mapCardConfig.find(global_PCIeParameterName[7]);
 	pCoupleParameter = &(iter->second);
 	WriteRegister(m_pCard, pCoupleParameter->nOffset, pCoupleParameter->nValue); 
-
 	iter = m_mapCardConfig.find(global_PCIeParameterName[8]);
 	pCoupleParameter = &(iter->second);
 	WriteRegister(m_pCard, pCoupleParameter->nOffset, pCoupleParameter->nValue); 
-
 	iter = m_mapCardConfig.find(global_PCIeParameterName[9]);
 	pCoupleParameter = &(iter->second);
 	WriteRegister(m_pCard, pCoupleParameter->nOffset, pCoupleParameter->nValue); 
-
 	iter = m_mapCardConfig.find(global_PCIeParameterName[10]);
 	pCoupleParameter = &(iter->second);
 	WriteRegister(m_pCard, pCoupleParameter->nOffset, pCoupleParameter->nValue); 
-
 	iter = m_mapCardConfig.find(global_PCIeParameterName[11]);
 	pCoupleParameter = &(iter->second);
 	WriteRegister(m_pCard, pCoupleParameter->nOffset, pCoupleParameter->nValue); 
-
 	iter = m_mapCardConfig.find(global_PCIeParameterName[12]);
 	pCoupleParameter = &(iter->second);
 	WriteRegister(m_pCard, pCoupleParameter->nOffset, pCoupleParameter->nValue); 
@@ -360,7 +355,6 @@ BOOL HighSpeedOperation::stopWrite()
 	{
 		StopTransfer(m_pCard);
 		CompleteTransfer(m_pCard);
-
         if (m_qFile == NULL)
         {
             fclose(m_qFile);
@@ -382,6 +376,7 @@ BOOL HighSpeedOperation::stopWrite()
 DWORD WINAPI HighSpeedOperation::onTransfer(LPVOID lpParameter)
 {
     HighSpeedOperation* pCPCIeCardOperation = (HighSpeedOperation*)lpParameter;
+    //
 	if(!pCPCIeCardOperation->m_bCardOpen)
 	{
 		pCPCIeCardOperation->m_bWriteStop = TRUE;
@@ -402,12 +397,9 @@ DWORD WINAPI HighSpeedOperation::onTransfer(LPVOID lpParameter)
 		while(!pCPCIeCardOperation->m_bWriteStop && pCPCIeCardOperation->m_bCardOpen)
 		{
 			pCPCIeCardOperation->m_RegisterLock.lock();
-
 			size_t nWriteBufferSize = ReadRegister(pCPCIeCardOperation->m_pCard, 0x58);
 			nWriteBufferSize *= DDR_BUFFER_SIZE;
-
 			pCPCIeCardOperation->m_RegisterLock.unlock();
-
 			if((DMA_WRITE_BUFFER_MAX_SIZE - nWriteBufferSize) < DMA_TRANSFER_SIZE)
 			{
 				Sleep(1);
@@ -432,14 +424,12 @@ DWORD WINAPI HighSpeedOperation::onTransfer(LPVOID lpParameter)
 			memcpy(pBuffer + nReadSize, pFillBuffer, DMA_TRANSFER_SIZE - nReadSize);
 			delete pFillBuffer;
 		}
-
 		size_t nRealWrite = Write(pCPCIeCardOperation->m_pCard, pBuffer, DMA_TRANSFER_SIZE);
 		if(nRealWrite != DMA_TRANSFER_SIZE)
 		{
 			pCPCIeCardOperation->m_bWriteStop = TRUE;
 			break;
 		}
-
         WriteRegister(pCPCIeCardOperation->m_pCard, REGISTER_TRANSFER_SIZE, DMA_TRANSFER_SIZE);
         WriteRegister(pCPCIeCardOperation->m_pCard, REGISTER_TRANSFER_VALID_SIZE, nReadSize);
 	}
@@ -497,11 +487,9 @@ DWORD WINAPI HighSpeedOperation::onReceive(LPVOID lpParameter)
 		while(!pCPCIeCardOperation->m_bRecvStop && pCPCIeCardOperation->m_bCardOpen)
 		{
 			pCPCIeCardOperation->m_RegisterLock.lock();
-
 			pCPCIeCardOperation->m_pcieDeviceInfo.dwGroupAWriteCount = ReadRegister(pCPCIeCardOperation->m_pCard, REGISTER_SEND_ADDR_CH1);
 			pCPCIeCardOperation->m_pcieDeviceInfo.dwGroupARecvCount = ReadRegister(pCPCIeCardOperation->m_pCard, REGISTER_RECV_ADDR_CH1);
 			pCPCIeCardOperation->m_pcieDeviceInfo.dwGroupACrcErrorCount = ReadRegister(pCPCIeCardOperation->m_pCard, REGISTER_CRC_ADDR_CH1);
-			//
             size_t nReadBufferSize = ReadRegister(pCPCIeCardOperation->m_pCard, 0x54);
             nReadBufferSize *= DDR_BUFFER_SIZE;
             pCPCIeCardOperation->m_pcieDeviceInfo.dwFifoCount = nReadBufferSize;
@@ -509,7 +497,6 @@ DWORD WINAPI HighSpeedOperation::onReceive(LPVOID lpParameter)
 			{
 				pCPCIeCardOperation->m_pcieDeviceInfo.dwFifoOverFlow++;
 			}
-			// 
 			pCPCIeCardOperation->m_RegisterLock.unlock();
 			// 
             if(DMA_DATA_SIZE > nReadBufferSize)

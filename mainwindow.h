@@ -38,10 +38,13 @@ public:
     ~MainWindow();
 
     QString getCurrentWorkspace() const;
-
     void setCurretWorkspace(QString strWorkspace);
 
-    enum ITypes {IDriver = 1999, IFolder = 2000, IFile = 2001};
+    enum ITypes {
+        IDriver = 1999,
+        IFolder = 2000,
+        IFile = 2001
+    };
 
 private:
     void createStatusBar();

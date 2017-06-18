@@ -7,11 +7,15 @@ MainWindow::MainWindow(QWidget *parent) :
     mdiArea(new QMdiArea)
 {
     ui->setupUi(this);
-    setWindowTitle(tr("PCI Express控制器 V3.00"));
+    setWindowTitle(tr("PCI Express控制器 V3.01"));
     setWindowIcon(QIcon(tr(":/images/PCIeController.png")));
     createStatusBar();
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    //mdiArea->setViewMode(QMdiArea::TabbedView);
+    //mdiArea->setTabPosition(QTabWidget::South);
+    //mdiArea->setTabsClosable(true);
+    //mdiArea->setTabsMovable(true);
     setCentralWidget(mdiArea);
 
     comboWorkspace = new QComboBox();
@@ -38,7 +42,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(listWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(on_listWidget_itemDoubleClicked(QListWidgetItem*)));
     connect(listWidget, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(on_listWidget_currentItemChanged(QListWidgetItem*,QListWidgetItem*)));
 
-    //setStyleSheet("background-color:rgb(199, 237, 204)");
+    // setStyleSheet("background-color:rgb(199, 237, 204)");
+    GetPCIExpressList();
+    //
+    initPCIeConfigParameter();
 }
 
 MainWindow::~MainWindow()
@@ -59,10 +66,11 @@ void MainWindow::setCurretWorkspace(QString strWorkspace)
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     QMessageBox::StandardButton closeButton;
-    closeButton = QMessageBox::question(this, tr("退出程序"),
-                                   QString(tr("确认退出程序?")),
-                                   QMessageBox::Yes | QMessageBox::No);
-    //
+    closeButton = QMessageBox::question(this,
+                                        tr("退出程序"),
+                                        tr("确认退出程序？"),
+                                        QMessageBox::Yes | QMessageBox::No);
+
     if (closeButton == QMessageBox::No)
     {
         event->ignore();  // 忽略退出信号，程序继续运行
@@ -121,19 +129,6 @@ void MainWindow::updateFileView(const QString strDir)
         m_dirCur = QDir(dirNew.canonicalPath());
         showItem(m_dirCur);
     }
-}
-
-void MainWindow::on_action_AddHighSpee_triggered()
-{
-    static int nOffset = 0;
-    HighSpeedWindow *child = createMdiChild();
-    // 日志信号之间连接
-    connect(child, SIGNAL(loggerWrite(QString)), this, SIGNAL(loggerWrite(QString)));
-    //
-    child->resize(320 + nOffset, 240 + nOffset);
-    nOffset += 10;
-    child->show();
-    emit loggerWrite("创建" + child->getWindowTitle());
 }
 
 void MainWindow::on_action_Back_triggered()
@@ -463,6 +458,49 @@ void MainWindow::on_action_Parameter_triggered()
     emit loggerWrite("启动参数设置");
 }
 
+void MainWindow::on_action_AddHighSpee_triggered()
+{
+    static int nOffset = 0;
+    HighSpeedWindow *child = createMdiChild();
+    // 日志信号之间连接combo
+    child->setWorkspace(comboWorkspace->currentText());
+    //
+    connect(child, SIGNAL(loggerWrite(QString)), this, SIGNAL(loggerWrite(QString)));
+    //
+    child->resize(320 + nOffset, 240 + nOffset);
+    nOffset += 10;
+    child->show();
+
+    QSqlQuery query;
+    query.prepare("insert into tbl_highspeed values(:windowTitle, :typeId,"
+                  ":srcAddrOffset, :srcAddrValue,"
+                  ":dstAddrOffset, :dstAddrValue,"
+                  ":typeStateOffset, :typeStateValue,"
+                  ":velocityIdOffset, :velocityIdValue,"
+                  ":validSizeOffset, :validSizeValue,"
+                  ":timeGapOffset, :timeGapValue,"
+                  ":startOrstopOffset, :startOrstopValue)");
+    query.bindValue(":windowTitle", child->getWindowTitle());
+    query.bindValue(":typeId", "2"); // 高速标记2
+    query.bindValue(":srcAddrOffset", "60");
+    query.bindValue(":srcAddrValue", "55");
+    query.bindValue(":dstAddrOffset", "64");
+    query.bindValue(":dstAddrValue", "77");
+    query.bindValue(":typeStateOffset", "68");
+    query.bindValue(":typeStateValue", "69");
+    query.bindValue(":velocityIdOffset", "6c");
+    query.bindValue(":velocityIdValue", "3c");
+    query.bindValue(":validSizeOffset", "70");
+    query.bindValue(":validSizeValue", "100");
+    query.bindValue(":timeGapOffset", "74");
+    query.bindValue(":timeGapValue", "50");
+    query.bindValue(":startOrstopOffset", "78");
+    query.bindValue(":startOrstopValue", "0");
+    bool bOk = query.exec();
+    //
+    emit loggerWrite("创建" + child->getWindowTitle());
+}
+
 void MainWindow::on_action_AddMediumSpeed_triggered()
 {
     emit loggerWrite("添加1Gbps中速PCIe窗口");
@@ -480,5 +518,7 @@ void MainWindow::on_action_AddTripleWire_triggered()
 
 void MainWindow::on_action_Save_triggered()
 {
+    QList<QMdiSubWindow *> subWindowList = mdiArea->subWindowList();
+
     emit loggerWrite("保存软件参数");
 }

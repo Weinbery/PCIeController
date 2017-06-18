@@ -89,6 +89,7 @@ void Close(PCIeParameter *pCard);
 
 //	static list<PCIeParameter>					m_pCardList;
 // static map<std::string, PPCIeParameter>		m_mapCardStrParameter;
-BOOL GetPCIExpressList(map<std::string, PPCIeParameter> &mapCardStrParameter);
+extern map<std::string, PPCIeParameter> mapCardStrParameter;
+BOOL GetPCIExpressList();
 
 #endif // PCIEXPRESS_H

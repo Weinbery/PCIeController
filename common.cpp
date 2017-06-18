@@ -2,7 +2,7 @@
 
 char* global_PCIeParameterName[DMA_PARAM_SIZE];
 
-void initPCIeParameter()
+void initPCIeConfigParameter()
 {
 	//初始化PCIe板卡需要操作的参数名称
 	global_PCIeParameterName[0] = PCIE_RECV_START;

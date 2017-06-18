@@ -21,6 +21,13 @@ public:
     QString getFile() const;
     QString getWindowTitle() const;
 
+public:
+    void setWorkspace(QString strDir);
+    // 从数据库读取数据，初始化对话框的参数
+    void initDialogParameter();
+    // 初始化寄存器的配置
+    void initRegisterParameter();
+
 signals:
     void loggerWrite(const QString strContext);
 
@@ -38,6 +45,7 @@ private:
     Ui::HighSpeedWindow *ui;
     QString strWindowTitle;
     QString strFile;
+    QString strWorkspace;
     //
     HighSpeedOperation *pciexpress;
 };

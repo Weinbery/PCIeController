@@ -22,23 +22,18 @@ signals:
 public:
     BOOL startReceive();
     BOOL stopReceive();
-
     BOOL startWrite();
     BOOL stopWrite();
-
-public:
     void buildEvent();
     void clearEvent();
-
     BOOL openCard();
     BOOL closeCard();
     BOOL setCard(PPCIeParameter pCard);
 
-    void createFileDirectory(const QString strSavePath);
-
-    void setCardIndex(int nCardIndex) {
-		m_nCardIndex = nCardIndex;
-	}
+public:
+    void setSaveDirectory(const QString strSavePath) {
+        m_strSavePath = strSavePath;
+    }
 
     void setTimeStamp(QString strTimeStamp) {
         m_strTimeStamp = strTimeStamp;
@@ -53,7 +48,6 @@ public:
 	}
 
     static DWORD WINAPI onTransfer(LPVOID lpParameter);
-
     static DWORD WINAPI onReceive(LPVOID lpParameter);
 
 protected:
@@ -67,28 +61,21 @@ public:
 	BOOL					m_bWriteStop;
     QString					m_strSavePath;
     QString					m_strTimeStamp;
-
-public:
 	BYTE*					m_pBuffer;
 	size_t					m_nOffset;
     QMutex					m_lock;
 	CoupleParameterMap		m_mapCardConfig;
     PCIeDeviceInfo			m_pcieDeviceInfo;
-
     PPCIeParameter			m_pCard;
 	BOOL					m_bCardOpen;
 	size_t					m_nBlockSize;
     size_t					m_nCardIndex;
-
     QMutex					m_ConfigLock;
     QMutex					m_RegisterLock;
-
     FILE*					m_qFile;
     size_t					m_nTotalSize;
 	TRANSFER_PARAMETER		m_transferParameter;
-
 	HANDLE					m_hRecvEvent[PHYSIC_MEMORY_NUMBER];
-
 	IndexParameter			m_pThis[PHYSIC_MEMORY_NUMBER];
 };
 

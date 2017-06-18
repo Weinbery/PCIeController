@@ -535,7 +535,9 @@ void Close(PCIeParameter *pCard)
 	::DeleteCriticalSection(&pCard->criticalSection);
 }
 
-BOOL GetPCIExpressList(map<std::string, PPCIeParameter> &mapCardStrParameter)
+map<std::string, PPCIeParameter> mapCardStrParameter;
+
+BOOL GetPCIExpressList()
 {
     list<PCIeParameter> pCardList;
     if(!GetCards(pCardList))
