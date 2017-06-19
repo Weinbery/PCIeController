@@ -63,6 +63,35 @@ void MainWindow::setCurretWorkspace(QString strWorkspace)
     strCurrentWorkspace = strWorkspace;
 }
 
+void MainWindow::showCurveGraph(QCustomPlot *customPlot)
+{
+    QVector<double> temp(10);
+    QVector<double> temp1(10);
+
+    for(int i = 0; i < 9; i++)
+    {
+        num[i] = num[i+1];
+    }
+    num[9] = n;
+    for(int i = 0; i < 10; i++)
+    {
+        temp[i] = i;
+        temp1[i] = num[i];
+    }
+    //graph1 = ui->qcustomplot->addGraph();//增加一条曲线图层
+    customPlot->addGraph();
+    customPlot->graph(0)->setPen(QPen(Qt::blue));
+    customPlot->graph(0)->setData(temp, temp1);
+    customPlot->graph(0)->setName(QString("速率曲线"));
+
+    customPlot->xAxis->setLabel("时间：秒");
+    customPlot->yAxis->setLabel("存储速率：MB/s");
+
+    customPlot->xAxis->setRange(temp[0], temp[9]);
+    customPlot->yAxis->setRange(0, 100);
+    customPlot->replot();
+}
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     QMessageBox::StandardButton closeButton;
@@ -79,6 +108,15 @@ void MainWindow::closeEvent(QCloseEvent *event)
     {
         event->accept();  // 接受退出信号，程序退出
     }
+}
+
+void MainWindow::showGraph()
+{
+    QTime t;
+    t = QTime::currentTime();
+    qsrand(QTime(0, 0, 0).secsTo(QTime::currentTime()));
+    n = qrand() % 50;
+    showCurveGraph(curveWidget);
 }
 
 void MainWindow::createStatusBar()
@@ -215,14 +253,30 @@ void MainWindow::on_action_Lookup_triggered()
 // 绘制速率曲线
 void MainWindow::on_action_Curve_triggered()
 {
+    // 停靠方式
     QDockWidget *dock = new QDockWidget(tr("速率曲线"), this);
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    QListWidget* qlist = new QListWidget(dock);
-    qlist->addItems(QStringList()
-            << "速率曲线"
-            << "待实现");
-    dock->setWidget(qlist);
+
+    curveWidget = new QCustomPlot();
+    QBrush qBrush(QColor(255, 255, 255)); // 设置背景色
+    curveWidget->setBackground(qBrush);
+    // 放在多文档区域
+    //mdiArea->addSubWindow(curveWidget);
+    //curveWidget->move(320, 240);
+    //curveWidget->show();
+
+    for(int i = 0; i < 10; i++)
+    {
+        num[i] = 0;
+    }
+    n = 0;
+    QTimer *timer = new QTimer(this);
+    timer->start(1000);
+    connect(timer, SIGNAL(timeout()), this, SLOT(showGraph()));
+
+    dock->setWidget(curveWidget);
     addDockWidget(Qt::RightDockWidgetArea, dock);
+
     emit loggerWrite("打开速率曲线");
 }
 

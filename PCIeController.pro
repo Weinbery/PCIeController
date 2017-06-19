@@ -6,7 +6,7 @@
 
 QT       += core gui sql
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TARGET = PCIeController
 TEMPLATE = app
@@ -39,7 +39,8 @@ SOURCES += main.cpp\
     pciexpress.cpp \
     highspeedoperation.cpp \
     common.cpp \
-    logger.cpp
+    logger.cpp \
+    qcustomplot.cpp
 
 HEADERS  += mainwindow.h \
     mdichild.h \
@@ -48,7 +49,8 @@ HEADERS  += mainwindow.h \
     highspeedoperation.h \
     common.h \
     logger.h \
-    sqlitedatabase.h
+    sqlitedatabase.h \
+    qcustomplot.h
 
 FORMS    += mainwindow.ui \
     highspeedwindow.ui

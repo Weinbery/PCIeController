@@ -23,6 +23,7 @@
 #include "common.h"
 #include "logger.h"
 #include "mdichild.h"
+#include "qcustomplot.h"
 #include "highspeedwindow.h"
 
 namespace Ui {
@@ -39,6 +40,13 @@ public:
 
     QString getCurrentWorkspace() const;
     void setCurretWorkspace(QString strWorkspace);
+
+    void showCurveGraph(QCustomPlot *customPlot);
+
+    QCustomPlot *curveWidget;
+
+    double num[10];
+    int n;
 
     enum ITypes {
         IDriver = 1999,
@@ -57,6 +65,7 @@ signals:
     void loggerWrite(const QString strContext);
 
 public slots:
+    void showGraph();
     HighSpeedWindow *createMdiChild();
     void loggerOutput(const QString strContext);
 
