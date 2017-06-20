@@ -61,7 +61,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     on_action_Save_triggered();
-
+    Sleep(10);
     delete ui;
 }
 
@@ -555,8 +555,18 @@ void MainWindow::on_action_Parameter_triggered()
     emit loggerWrite("启动参数设置");
 }
 
+void MainWindow::on_action_Exit_triggered()
+{
+    close();
+}
+
 void MainWindow::on_action_AddHighSpee_triggered()
 {    
+    if (HighSpeedWindow::sequenceNumber >= 3)
+    {
+        QMessageBox::warning(this, tr("添加失败"), tr("由于内存限制，最多只能创建2个高速PCIe窗口。"));
+        return;
+    }
     HighSpeedWindow *widget = new HighSpeedWindow(NULL);
     // 日志信号之间连接
     widget->setWorkspace(comboWorkspace->currentText());
@@ -581,7 +591,7 @@ void MainWindow::on_action_AddHighSpee_triggered()
                   ":timeGapOffset, :timeGapValue,"
                   ":startOrstopOffset, :startOrstopValue)");
     query.bindValue(":windowTitle", widget->getWindowTitle());
-    query.bindValue(":typeId", "2"); // 高速标记2
+    query.bindValue(":typeId", "1"); // 高速标记2
     query.bindValue(":srcAddrOffset", "60");
     query.bindValue(":srcAddrValue", "55");
     query.bindValue(":dstAddrOffset", "64");
@@ -596,7 +606,7 @@ void MainWindow::on_action_AddHighSpee_triggered()
     query.bindValue(":timeGapValue", "50");
     query.bindValue(":startOrstopOffset", "78");
     query.bindValue(":startOrstopValue", "0");
-    bool bOk = query.exec();
+    query.exec();
     //
     emit loggerWrite("创建" + widget->getWindowTitle());
 }
@@ -618,20 +628,20 @@ void MainWindow::on_action_AddTripleWire_triggered()
 
 void MainWindow::on_action_Save_triggered()
 {
+    QSqlQuery query;
+    query.exec("delete from tbl_workspace");
     int nCount = comboWorkspace->count();
     for (int i = 0; i < nCount; i++)
     {
         QString strWorkspace = comboWorkspace->itemText(i);
-        QSqlQuery query;
         query.prepare("insert into tbl_workspace(workspace) values(:workspace)");
         query.bindValue(":workspace", strWorkspace);
         query.exec();
     }
-    QSqlQuery query;
-    query.prepare("delete from tbl_highspeed");
-    query.exec();
+    ///
+    query.exec("delete from tbl_highspeed");
     QList<QMdiSubWindow *> subWindowList = mdiArea->subWindowList();
-    //
+    ///
     if (subWindowList.size() < 0)
     {
         return;
@@ -644,7 +654,6 @@ void MainWindow::on_action_Save_triggered()
         if (pSubWindow->getSubWindowType() == PCIeSubWindow::swHighSpeed)
         {
             HighSpeedWindow *tempWindow = qobject_cast<HighSpeedWindow*>(pSubWindow->widget());
-            QSqlQuery query;
             query.prepare("insert into tbl_highspeed values(:windowTitle, :typeId,"
                           ":srcAddrOffset, :srcAddrValue,"
                           ":dstAddrOffset, :dstAddrValue,"
@@ -687,3 +696,4 @@ void MainWindow::on_action_Save_triggered()
 
     emit loggerWrite("保存软件参数");
 }
+

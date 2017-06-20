@@ -6,15 +6,14 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-
     /// 创建数据库连接
     if (!createSqliteConnection())
     {
         return -1;
     }
-
-    QApplication::setStyle(QStyleFactory::create("fusion")); // fusion windows
-
+    /// fusion windows
+    QApplication::setStyle(QStyleFactory::create("fusion"));
+    ///
     MainWindow w;
     w.show();
 

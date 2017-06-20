@@ -63,6 +63,7 @@ private:
 
 protected:
     void closeEvent(QCloseEvent *event);
+
 signals:
     void loggerWrite(const QString strContext);
 
@@ -83,6 +84,7 @@ private slots:
     void on_action_Upper_triggered();
     void on_action_Lookup_triggered();
     void on_action_Curve_triggered();
+    void on_action_Exit_triggered();
     //
     void on_comboWorkspace_currentTextChanged(const QString &arg1);
     void on_listWidget_itemDoubleClicked(QListWidgetItem *item);

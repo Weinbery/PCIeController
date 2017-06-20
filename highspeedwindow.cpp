@@ -71,12 +71,13 @@ HighSpeedWindow::HighSpeedWindow(QString windowTitle, QWidget *parent) :
 
 HighSpeedWindow::~HighSpeedWindow()
 {
-    delete ui;
+    saveDialogParameter();
     if (NULL != pciexpress)
     {
         delete pciexpress;
         pciexpress = NULL;
     }
+    delete ui;
 }
 
 QSize HighSpeedWindow::sizeHint() const
@@ -89,7 +90,7 @@ QString HighSpeedWindow::getWindowTitle() const
     return strWindowTitle;
 }
 
-void HighSpeedWindow::setWorkspace(QString strDir)
+void HighSpeedWindow::setWorkspace(const QString strDir)
 {
     strWorkspace = strDir;
 }
@@ -97,6 +98,38 @@ void HighSpeedWindow::setWorkspace(QString strDir)
 void HighSpeedWindow::initDialogParameter()
 {
 
+}
+
+void HighSpeedWindow::saveDialogParameter()
+{
+    QSqlQuery query;
+    query.prepare("update tbl_highspeed set typeId = :typeId,"
+                  "srcAddrOffset = :srcAddrOffset, srcAddrValue = :srcAddrValue,"
+                  "dstAddrOffset = :dstAddrOffset, dstAddrValue = :dstAddrValue,"
+                  "typeStateOffset = :typeStateOffset, typeStateValue = :typeStateValue,"
+                  "velocityIdOffset = :velocityIdOffset, velocityIdValue = :velocityIdValue,"
+                  "validSizeOffset = :validSizeOffset, validSizeValue = :validSizeValue,"
+                  "timeGapOffset = :timeGapOffset, timeGapValue = :timeGapValue,"
+                  "startOrstopOffset = :startOrstopOffset, startOrstopValue = :startOrstopValue "
+                  "where windowTitle = :windowTitle");
+    ///
+    query.bindValue(":windowTitle", getWindowTitle());
+    query.bindValue(":typeId", "1"); // 高速标记1
+    query.bindValue(":srcAddrOffset", ui->labelSrcAddress->text());
+    query.bindValue(":srcAddrValue", ui->lineEditSrcAddress->text());
+    query.bindValue(":dstAddrOffset", ui->labelDstAddress->text());
+    query.bindValue(":dstAddrValue", ui->lineEditDstAddress->text());
+    query.bindValue(":typeStateOffset", ui->labelTypeState->text());
+    query.bindValue(":typeStateValue", ui->lineEditTypeState->text());
+    query.bindValue(":velocityIdOffset", ui->labelVelocityId->text());
+    query.bindValue(":velocityIdValue", ui->lineEditVelocityId->text());
+    query.bindValue(":validSizeOffset", ui->labelValidSize->text());
+    query.bindValue(":validSizeValue", ui->lineEditValidSize->text());
+    query.bindValue(":timeGapOffset", ui->labelTimeGap->text());
+    query.bindValue(":timeGapValue", ui->lineEditTimeGap->text());
+    query.bindValue(":startOrstopOffset", ui->labelStartOrStop->text());
+    query.bindValue(":startOrstopValue", ui->lineEditStartOrStop->text());
+    query.exec();
 }
 
 void HighSpeedWindow::initRegisterParameter()
