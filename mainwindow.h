@@ -24,6 +24,7 @@
 #include "logger.h"
 #include "mdichild.h"
 #include "qcustomplot.h"
+#include "pciesubwindow.h"
 #include "highspeedwindow.h"
 
 namespace Ui {
@@ -57,6 +58,7 @@ public:
 private:
     void createStatusBar();
     void createDockWindows();
+    void createSubWindows();
     void updateFileView(const QString strDir);
 
 protected:
@@ -66,7 +68,6 @@ signals:
 
 public slots:
     void showGraph();
-    HighSpeedWindow *createMdiChild();
     void loggerOutput(const QString strContext);
 
 private slots:
@@ -83,8 +84,9 @@ private slots:
     void on_action_Lookup_triggered();
     void on_action_Curve_triggered();
     //
+    void on_comboWorkspace_currentTextChanged(const QString &arg1);
     void on_listWidget_itemDoubleClicked(QListWidgetItem *item);
-    void on_listWidget_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
+    void on_listWidget_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);   
 
 private:
     Logger *logger;

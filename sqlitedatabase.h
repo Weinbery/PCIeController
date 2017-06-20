@@ -26,6 +26,12 @@ static bool createSqliteConnection()
         QMessageBox::critical(NULL, QObject::tr("失败"), QObject::tr("创建运行日志表失败!"));
         return false;
     }
+    bOk = query.exec("create table if not exists tbl_workspace(workspace text PRIMARY KEY)");
+    if (!bOk)
+    {
+        QMessageBox::critical(NULL, QObject::tr("失败"), QObject::tr("创建工作空间表失败!"));
+        return false;
+    }
     bOk = query.exec("create table if not exists tbl_highspeed(windowTitle text PRIMARY KEY NOT NULL,"
                      "typeId INTEGER NOT NULL,"
                      "srcAddrOffset varchar(10), srcAddrValue varchar(10),"

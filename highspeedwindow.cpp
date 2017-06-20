@@ -36,6 +36,39 @@ HighSpeedWindow::HighSpeedWindow(QWidget *parent) :
     pciexpress = new HighSpeedOperation();
 }
 
+HighSpeedWindow::HighSpeedWindow(QString windowTitle, QWidget *parent) :
+    strWindowTitle(windowTitle),
+    QWidget(parent),
+    ui(new Ui::HighSpeedWindow)
+{
+    ui->setupUi(this);
+
+    sequenceNumber++;
+    setWindowTitle(strWindowTitle);
+
+    QStringList comboSendType;
+    comboSendType << "PCIe发送" << "发送文件";
+    ui->comboBoxSendType->addItems(comboSendType);
+    ui->lineEditChooseFile->setVisible(false);
+    ui->pushButtonChooseFile->setVisible(false);
+
+    ui->radioButtonAcc->setChecked(true);
+    //ui->radioButtonAcc->setVisible(false);
+    if (mapCardStrParameter.size() > 0)
+    {
+        QStringList pcieList;
+        map<std::string, PPCIeParameter>::iterator iter = mapCardStrParameter.begin();
+        for (; iter != mapCardStrParameter.end(); iter++)
+        {
+            pcieList << iter->first.c_str();
+        }
+        // 添加pcie总线列表
+        ui->comboBoxPCIeBus->addItems(pcieList);
+    }
+    //
+    pciexpress = new HighSpeedOperation();
+}
+
 HighSpeedWindow::~HighSpeedWindow()
 {
     delete ui;

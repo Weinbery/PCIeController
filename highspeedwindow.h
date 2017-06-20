@@ -14,6 +14,7 @@ class HighSpeedWindow : public QWidget
 
 public:
     explicit HighSpeedWindow(QWidget *parent = 0);
+    HighSpeedWindow(QString windowTitle = tr(""), QWidget *parent = 0);
     ~HighSpeedWindow();
 
     QSize sizeHint() const;

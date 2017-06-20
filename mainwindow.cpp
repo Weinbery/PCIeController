@@ -21,14 +21,24 @@ MainWindow::MainWindow(QWidget *parent) :
     comboWorkspace = new QComboBox();
     comboWorkspace->setEditable(true);
     comboWorkspace->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    comboDirList << "E:/Qt/Workspace" << "E:/Qt";
+
+    QSqlQuery query;
+    query.exec("select * from tbl_workspace");
+    while (query.next())
+    {
+        comboDirList << query.value(0).toString();
+    }
     comboWorkspace->addItems(comboDirList);
+    connect(comboWorkspace, SIGNAL(currentTextChanged(QString)), this, SLOT(on_comboWorkspace_currentTextChanged(QString)));
     ui->toolBarWorkspace->addWidget(comboWorkspace);
     strCurrentWorkspace = comboWorkspace->currentText();
 
     bControlWorkspace = false;
 
+    /// 创建停靠窗口
     createDockWindows();
+    /// 创建多文档区域的子窗口
+    createSubWindows();
 
     m_iconDriver = QIcon(":/images/driver.png");
     m_iconFolder = QIcon(":images/folder.png");
@@ -50,6 +60,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    on_action_Save_triggered();
+
     delete ui;
 }
 
@@ -143,12 +155,32 @@ void MainWindow::createDockWindows()
     addDockWidget(Qt::RightDockWidgetArea, propertyWidget);
 }
 
-HighSpeedWindow *MainWindow::createMdiChild()
+void MainWindow::createSubWindows()
 {
-    HighSpeedWindow *child = new HighSpeedWindow;
-    mdiArea->addSubWindow(child);
-
-    return child;
+    QStringList highspeedlist;
+    QSqlQuery query;
+    query.exec("select * from tbl_highspeed");
+    while (query.next())
+    {
+        highspeedlist << query.value(0).toString();
+    }
+    for (int i = 0; i < highspeedlist.size(); i++)
+    {
+        QString windowTitle = highspeedlist.at(i);
+        HighSpeedWindow *widget = new HighSpeedWindow(windowTitle);
+        // 日志信号之间连接combo
+        widget->setWorkspace(comboWorkspace->currentText());
+        connect(widget, SIGNAL(loggerWrite(QString)), this, SIGNAL(loggerWrite(QString)));
+        //
+        PCIeSubWindow *subWindow = new PCIeSubWindow();
+        subWindow->setWidget(widget);
+        subWindow->setSubWindowType(PCIeSubWindow::swHighSpeed);
+        subWindow->setWindowIcon(QIcon(tr(":/images/PCIeController.png")));
+        subWindow->setAttribute(Qt::WA_DeleteOnClose);
+        //subWindow->resize(480, 320);
+        mdiArea->addSubWindow(subWindow);
+        subWindow->show();
+    }
 }
 
 void MainWindow::loggerOutput(const QString strContext)
@@ -278,6 +310,17 @@ void MainWindow::on_action_Curve_triggered()
     addDockWidget(Qt::RightDockWidgetArea, dock);
 
     emit loggerWrite("打开速率曲线");
+}
+
+void MainWindow::on_comboWorkspace_currentTextChanged(const QString &arg1)
+{
+    if (!arg1.isEmpty())
+    {
+        strCurrentWorkspace = arg1;
+        updateFileView(strCurrentWorkspace);
+        //
+        emit loggerWrite("进入:" + strCurrentWorkspace);
+    }
 }
 
 // 代码复制粘贴而来
@@ -513,17 +556,20 @@ void MainWindow::on_action_Parameter_triggered()
 }
 
 void MainWindow::on_action_AddHighSpee_triggered()
-{
-    static int nOffset = 0;
-    HighSpeedWindow *child = createMdiChild();
-    // 日志信号之间连接combo
-    child->setWorkspace(comboWorkspace->currentText());
+{    
+    HighSpeedWindow *widget = new HighSpeedWindow(NULL);
+    // 日志信号之间连接
+    widget->setWorkspace(comboWorkspace->currentText());
+    connect(widget, SIGNAL(loggerWrite(QString)), this, SIGNAL(loggerWrite(QString)));
     //
-    connect(child, SIGNAL(loggerWrite(QString)), this, SIGNAL(loggerWrite(QString)));
-    //
-    child->resize(320 + nOffset, 240 + nOffset);
-    nOffset += 10;
-    child->show();
+    PCIeSubWindow *subWindow = new PCIeSubWindow();
+    subWindow->setWidget(widget);
+    subWindow->setSubWindowType(PCIeSubWindow::swHighSpeed);
+    subWindow->setWindowIcon(QIcon(tr(":/images/PCIeController.png")));
+    subWindow->setAttribute(Qt::WA_DeleteOnClose);
+    //subWindow->resize(480, 320);
+    mdiArea->addSubWindow(subWindow);
+    subWindow->show();
 
     QSqlQuery query;
     query.prepare("insert into tbl_highspeed values(:windowTitle, :typeId,"
@@ -534,7 +580,7 @@ void MainWindow::on_action_AddHighSpee_triggered()
                   ":validSizeOffset, :validSizeValue,"
                   ":timeGapOffset, :timeGapValue,"
                   ":startOrstopOffset, :startOrstopValue)");
-    query.bindValue(":windowTitle", child->getWindowTitle());
+    query.bindValue(":windowTitle", widget->getWindowTitle());
     query.bindValue(":typeId", "2"); // 高速标记2
     query.bindValue(":srcAddrOffset", "60");
     query.bindValue(":srcAddrValue", "55");
@@ -552,7 +598,7 @@ void MainWindow::on_action_AddHighSpee_triggered()
     query.bindValue(":startOrstopValue", "0");
     bool bOk = query.exec();
     //
-    emit loggerWrite("创建" + child->getWindowTitle());
+    emit loggerWrite("创建" + widget->getWindowTitle());
 }
 
 void MainWindow::on_action_AddMediumSpeed_triggered()
@@ -572,7 +618,72 @@ void MainWindow::on_action_AddTripleWire_triggered()
 
 void MainWindow::on_action_Save_triggered()
 {
+    int nCount = comboWorkspace->count();
+    for (int i = 0; i < nCount; i++)
+    {
+        QString strWorkspace = comboWorkspace->itemText(i);
+        QSqlQuery query;
+        query.prepare("insert into tbl_workspace(workspace) values(:workspace)");
+        query.bindValue(":workspace", strWorkspace);
+        query.exec();
+    }
+    QSqlQuery query;
+    query.prepare("delete from tbl_highspeed");
+    query.exec();
     QList<QMdiSubWindow *> subWindowList = mdiArea->subWindowList();
+    //
+    if (subWindowList.size() < 0)
+    {
+        return;
+    }
+    //
+    const int nSubWindowCount = subWindowList.size();
+    for (int i = 0; i < nSubWindowCount; i++)
+    {
+        PCIeSubWindow* pSubWindow = (PCIeSubWindow*)subWindowList.at(i);
+        if (pSubWindow->getSubWindowType() == PCIeSubWindow::swHighSpeed)
+        {
+            HighSpeedWindow *tempWindow = qobject_cast<HighSpeedWindow*>(pSubWindow->widget());
+            QSqlQuery query;
+            query.prepare("insert into tbl_highspeed values(:windowTitle, :typeId,"
+                          ":srcAddrOffset, :srcAddrValue,"
+                          ":dstAddrOffset, :dstAddrValue,"
+                          ":typeStateOffset, :typeStateValue,"
+                          ":velocityIdOffset, :velocityIdValue,"
+                          ":validSizeOffset, :validSizeValue,"
+                          ":timeGapOffset, :timeGapValue,"
+                          ":startOrstopOffset, :startOrstopValue)");
+            query.bindValue(":windowTitle", tempWindow->getWindowTitle());
+            query.bindValue(":typeId", "1"); // 高速标记1
+            query.bindValue(":srcAddrOffset", "60");
+            query.bindValue(":srcAddrValue", "55");
+            query.bindValue(":dstAddrOffset", "64");
+            query.bindValue(":dstAddrValue", "77");
+            query.bindValue(":typeStateOffset", "68");
+            query.bindValue(":typeStateValue", "69");
+            query.bindValue(":velocityIdOffset", "6c");
+            query.bindValue(":velocityIdValue", "3c");
+            query.bindValue(":validSizeOffset", "70");
+            query.bindValue(":validSizeValue", "100");
+            query.bindValue(":timeGapOffset", "74");
+            query.bindValue(":timeGapValue", "50");
+            query.bindValue(":startOrstopOffset", "78");
+            query.bindValue(":startOrstopValue", "0");
+            query.exec();
+        }
+        else if (pSubWindow->getSubWindowType() == PCIeSubWindow::swMediumSpeed)
+        {
+            int temp = 0;
+        }
+        else if (pSubWindow->getSubWindowType() == PCIeSubWindow::swSingleWire)
+        {
+            int temp = 0;
+        }
+        else if (pSubWindow->getSubWindowType() == PCIeSubWindow::swTripleWire)
+        {
+            int temp = 0;
+        }
+    }
 
     emit loggerWrite("保存软件参数");
 }

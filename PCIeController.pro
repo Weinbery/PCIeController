@@ -40,7 +40,8 @@ SOURCES += main.cpp\
     highspeedoperation.cpp \
     common.cpp \
     logger.cpp \
-    qcustomplot.cpp
+    qcustomplot.cpp \
+    pciesubwindow.cpp
 
 HEADERS  += mainwindow.h \
     mdichild.h \
@@ -50,7 +51,8 @@ HEADERS  += mainwindow.h \
     common.h \
     logger.h \
     sqlitedatabase.h \
-    qcustomplot.h
+    qcustomplot.h \
+    pciesubwindow.h
 
 FORMS    += mainwindow.ui \
     highspeedwindow.ui
