@@ -77,6 +77,7 @@ void MainWindow::setCurretWorkspace(QString strWorkspace)
 
 void MainWindow::showCurveGraph(QCustomPlot *customPlot)
 {
+    static quint32 nCount = 0;
     QVector<double> temp(10);
     QVector<double> temp1(10);
 
@@ -87,21 +88,49 @@ void MainWindow::showCurveGraph(QCustomPlot *customPlot)
     num[9] = n;
     for(int i = 0; i < 10; i++)
     {
-        temp[i] = i;
+        temp[i] = i + nCount;
         temp1[i] = num[i];
     }
-    //graph1 = ui->qcustomplot->addGraph();//增加一条曲线图层
-    customPlot->addGraph();
-    customPlot->graph(0)->setPen(QPen(Qt::blue));
-    customPlot->graph(0)->setData(temp, temp1);
-    customPlot->graph(0)->setName(QString("速率曲线"));
+    //QCPGraph graph = ui->qcustomplot->addGraph();//增加一条曲线图层
+    QCPGraph *graph = customPlot->addGraph();
+    customPlot->setBackground(QColor(50, 50, 50));
+    customPlot->xAxis->setLabel("时间（秒）");
+    customPlot->yAxis->setLabel("存储速率（MB/s）");
 
-    customPlot->xAxis->setLabel("时间：秒");
-    customPlot->yAxis->setLabel("存储速率：MB/s");
+    graph->setPen(QPen(QColor(32, 178, 170)));
+
+    // 设置x/y轴文本色、轴线色、字体等
+    customPlot->xAxis->setTickLabelColor(Qt::white);
+    customPlot->xAxis->setLabelColor(QColor(0, 160, 230));
+    customPlot->xAxis->setBasePen(QPen(QColor(32, 178, 170)));
+    customPlot->xAxis->setTickPen(QPen(QColor(128, 0, 255)));
+    customPlot->xAxis->setSubTickPen(QColor(255, 165, 0));
+    QFont xFont = customPlot->xAxis->labelFont();
+    xFont.setPixelSize(15);
+    customPlot->xAxis->setLabelFont(xFont);
+
+    customPlot->yAxis->setTickLabelColor(Qt::white);
+    customPlot->yAxis->setLabelColor(QColor(0, 160, 230));
+    customPlot->yAxis->setBasePen(QPen(QColor(32, 178, 170)));
+    customPlot->yAxis->setTickPen(QPen(QColor(128, 0, 255)));
+    customPlot->yAxis->setSubTickPen(QColor(255, 165, 0));
+    QFont yFont = customPlot->yAxis->labelFont();
+    yFont.setPixelSize(15);
+    customPlot->yAxis->setLabelFont(yFont);
+
+    //graph->setPen(QPen(Qt::blue));
+    graph->setData(temp, temp1);
+    graph->setName(QString("速率曲线"));
 
     customPlot->xAxis->setRange(temp[0], temp[9]);
     customPlot->yAxis->setRange(0, 100);
     customPlot->replot();
+
+    /// 保存png图片
+    //QString strPng = tr("E:/Qt/img/qcustomplot_%1.png").arg(nCount);
+    //customPlot->savePng(strPng, 960, 640);
+
+    nCount++;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -290,13 +319,21 @@ void MainWindow::on_action_Curve_triggered()
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 
     curveWidget = new QCustomPlot();
-    QBrush qBrush(QColor(255, 255, 255)); // 设置背景色
+    QBrush qBrush(QColor(50, 50, 50)); // 设置背景色
     curveWidget->setBackground(qBrush);
+
     // 放在多文档区域
     //mdiArea->addSubWindow(curveWidget);
     //curveWidget->move(320, 240);
     //curveWidget->show();
-
+    //QSharedPointer<QCPAxisTickerTime> timeTicker(new QCPAxisTickerTime);
+    //timeTicker->setTimeFormat("%h:%m:%s");
+    //curveWidget->xAxis->setTicker(timeTicker);
+    //curveWidget->axisRect()->setupFullAxesBox();
+    // make left and bottom axes transfer their ranges to right and top axes:
+    //connect(curveWidget->xAxis, SIGNAL(rangeChanged(QCPRange)), curveWidget->xAxis2, SLOT(setRange(QCPRange)));
+    //connect(curveWidget->yAxis, SIGNAL(rangeChanged(QCPRange)), curveWidget->yAxis2, SLOT(setRange(QCPRange)));
+    //
     for(int i = 0; i < 10; i++)
     {
         num[i] = 0;
