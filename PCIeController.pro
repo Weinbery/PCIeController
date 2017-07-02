@@ -52,7 +52,8 @@ HEADERS  += mainwindow.h \
     logger.h \
     sqlitedatabase.h \
     qcustomplot.h \
-    pciesubwindow.h
+    pciesubwindow.h \
+    commonhelper.h
 
 FORMS    += mainwindow.ui \
     highspeedwindow.ui
